@@ -31,6 +31,8 @@ Untuk melanjutkan ke seluruh rentang, klik dua kali **`LANJUT_TWSCRAPE.cmd`**. I
 
 Jika muncul `NoAccountError`, akun belum tersedia untuk pencarian, termasuk kemungkinan cooldown. Tunggu sebelum mencoba lagi; jangan menghapus database/reset lock untuk memaksa akses. `setup` ulang hanya bila kolektor menyatakan sesi tidak aktif atau sesi memang kedaluwarsa. Launcher full tetap memperbarui preprocessing dan audit dari hasil parsial.
 
+SDK sekarang menunggu ketersediaan akun hingga 900 detik per pengambilan akun, dengan batas keseluruhan kueri default 1.200 detik. Akun tidak aktif tetap gagal; pembatasan tidak dihapus. Selama menunggu, jumlah post bisa tidak berubah. Pemantau memakai PID dan waktu mulai dari checkpoint, tanpa WMI/CIM. Tutup lalu buka kembali pemantau setelah memperbarui script; pesan gagal memeriksa proses berarti status tidak diketahui, bukan bukti proses berhenti.
+
 Volume harian hasil pilot tidak mengukur volume percakapan sebenarnya: hari yang belum diambil tidak muncul pada CSV; hari yang terkena batas bisa kurang terwakili. Utamakan cakupan semua tanggal, lalu tinjau hari yang menyentuh batas. Tidak perlu memaksa jumlah post sama setiap hari atau membuang hari ramai untuk meratakan grafik.
 
 Periksa hasil tiap fase, teks lengkap, iklan, dan relevansi. Jika akses berhasil dan hasil pilot memadai, ambil lebih banyak dengan:

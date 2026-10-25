@@ -1,0 +1,10 @@
+﻿tahap,sebelum,sesudah,dibuang,keterangan
+1_gabung_raw,242,242,0,3 file; x=242
+2_dedup_id_post,242,242,0,
+3_teks_kosong,242,242,0,
+4_tidak_relevan,242,213,29,"lolos eksplisit=210, lolos konteks=3"
+5_tandai_teks_berulang,213,213,0,28 baris bertanda; ID berbeda dipertahankan untuk review
+6_spam,213,187,26,pola promosi atau tagar > 5
+7_akun_otomatis,187,187,0,akun di config.AKUN_DIBUANG: meta.ai
+6b_tandai_teks_pendek,187,187,0,8 baris < 4 token; dipertahankan
+9_di_luar_jendela,187,187,0,

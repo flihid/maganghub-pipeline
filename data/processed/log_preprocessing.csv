@@ -1,0 +1,11 @@
+﻿tahap,sebelum,sesudah,dibuang,keterangan
+1_gabung_raw,462,462,0,3 file; x=462
+2_dedup_id_post,462,462,0,
+3_teks_kosong,462,462,0,
+4_tidak_relevan,462,420,42,"lolos eksplisit=417, lolos konteks=3"
+5_tandai_teks_berulang,420,420,0,28 baris bertanda; ID berbeda dipertahankan untuk review
+6_promosi,420,375,45,promosi_v2; exclude=penawaran; review tetap dipertahankan
+7_akun_otomatis,375,375,0,akun di config.AKUN_DIBUANG: meta.ai
+6b_tandai_teks_pendek,375,375,0,21 baris < 4 token; dipertahankan
+9_di_luar_jendela,375,375,0,
+11_tahan_untuk_review_promosi,375,345,30,tetap tersimpan di maganghub_kandidat.csv dan review_promosi.csv

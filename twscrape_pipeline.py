@@ -130,7 +130,9 @@ def sdk():
         warnings.append(category)
     logger.remove()
     logger.add(capture, level='WARNING')
-    return API(str(SESSION), raise_when_no_account=True, wait_timeout=1, wait_interval=1), warnings
+    # Let the SDK respect temporary account locks rather than abort after 1s.
+    # Inactive sessions still fail immediately; no lock is cleared or bypassed.
+    return API(str(SESSION), raise_when_no_account=True, wait_timeout=900, wait_interval=5), warnings
 
 
 async def setup_session():
@@ -175,6 +177,9 @@ async def collect(args):
     checkpoint = RAW / ('twscrape_state_' + fingerprint + '.json')
     state = json.loads(checkpoint.read_text(encoding='utf-8')) if checkpoint.exists() else dict(settings=cfg, jobs={})
     state['status'] = 'running'
+    state['process_id'] = os.getpid()
+    state['run_started_at'] = datetime.now(WIB).isoformat()
+    write_json(checkpoint, state)
     records = load_records(RAW)
     known = {r['tweet_id'] for r in records}
     # Pilot quotas count this SDK's data, separately from earlier browser experiments.
@@ -233,6 +238,7 @@ async def collect(args):
             log['processed_once'] = not warnings
         except asyncio.CancelledError:
             log['status'] = 'interrupted_partial'
+            state['status'] = 'interrupted_partial'
             raise
         except TimeoutError:
             log['status'] = 'query_timeout_partial'
@@ -276,7 +282,7 @@ def parser():
     p.add_argument('--max-jobs', type=int, default=117)
     p.add_argument('--page-delay', type=float, default=5)
     p.add_argument('--query-delay', type=float, default=35)
-    p.add_argument('--query-timeout', type=float, default=120)
+    p.add_argument('--query-timeout', type=float, default=1200)
     return p
 
 

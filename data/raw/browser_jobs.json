@@ -1,0 +1,512 @@
+[
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-07-01",
+    "until": "2026-07-08"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-07-01",
+    "until": "2026-07-08"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-07-01",
+    "until": "2026-07-08"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-07-01",
+    "until": "2026-07-08"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-07-01",
+    "until": "2026-07-08"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-07-08",
+    "until": "2026-07-15"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-07-08",
+    "until": "2026-07-15"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-07-08",
+    "until": "2026-07-15"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-07-08",
+    "until": "2026-07-15"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-07-08",
+    "until": "2026-07-15"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-07-15",
+    "until": "2026-07-22"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-07-15",
+    "until": "2026-07-22"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-07-15",
+    "until": "2026-07-22"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-07-15",
+    "until": "2026-07-22"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-07-15",
+    "until": "2026-07-22"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-07-22",
+    "until": "2026-07-29"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-07-22",
+    "until": "2026-07-29"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-07-22",
+    "until": "2026-07-29"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-07-22",
+    "until": "2026-07-29"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-07-22",
+    "until": "2026-07-29"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-07-29",
+    "until": "2026-08-05"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-07-29",
+    "until": "2026-08-05"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-07-29",
+    "until": "2026-08-05"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-07-29",
+    "until": "2026-08-05"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-07-29",
+    "until": "2026-08-05"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-08-05",
+    "until": "2026-08-12"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-08-05",
+    "until": "2026-08-12"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-08-05",
+    "until": "2026-08-12"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-08-05",
+    "until": "2026-08-12"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-08-05",
+    "until": "2026-08-12"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-08-12",
+    "until": "2026-08-19"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-08-12",
+    "until": "2026-08-19"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-08-12",
+    "until": "2026-08-19"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-08-12",
+    "until": "2026-08-19"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-08-12",
+    "until": "2026-08-19"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-08-19",
+    "until": "2026-08-26"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-08-19",
+    "until": "2026-08-26"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-08-19",
+    "until": "2026-08-26"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-08-19",
+    "until": "2026-08-26"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-08-19",
+    "until": "2026-08-26"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "maganghub",
+    "since": "2026-08-26",
+    "until": "2026-09-01"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang hub\"",
+    "since": "2026-08-26",
+    "until": "2026-09-01"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-08-26",
+    "until": "2026-09-01"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-08-26",
+    "until": "2026-09-01"
+  },
+  {
+    "fase": "fase1_pengumuman",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-08-26",
+    "until": "2026-09-01"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "maganghub",
+    "since": "2026-09-01",
+    "until": "2026-09-08"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang hub\"",
+    "since": "2026-09-01",
+    "until": "2026-09-08"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-09-01",
+    "until": "2026-09-08"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-09-01",
+    "until": "2026-09-08"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-09-01",
+    "until": "2026-09-08"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "maganghub",
+    "since": "2026-09-08",
+    "until": "2026-09-15"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang hub\"",
+    "since": "2026-09-08",
+    "until": "2026-09-15"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-09-08",
+    "until": "2026-09-15"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-09-08",
+    "until": "2026-09-15"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-09-08",
+    "until": "2026-09-15"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "maganghub",
+    "since": "2026-09-15",
+    "until": "2026-09-21"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang hub\"",
+    "since": "2026-09-15",
+    "until": "2026-09-21"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-09-15",
+    "until": "2026-09-21"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-09-15",
+    "until": "2026-09-21"
+  },
+  {
+    "fase": "fase2_seleksi",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-09-15",
+    "until": "2026-09-21"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "maganghub",
+    "since": "2026-09-21",
+    "until": "2026-09-28"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang hub\"",
+    "since": "2026-09-21",
+    "until": "2026-09-28"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-09-21",
+    "until": "2026-09-28"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-09-21",
+    "until": "2026-09-28"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-09-21",
+    "until": "2026-09-28"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "maganghub",
+    "since": "2026-09-28",
+    "until": "2026-10-05"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang hub\"",
+    "since": "2026-09-28",
+    "until": "2026-10-05"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-09-28",
+    "until": "2026-10-05"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-09-28",
+    "until": "2026-10-05"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-09-28",
+    "until": "2026-10-05"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "maganghub",
+    "since": "2026-10-05",
+    "until": "2026-10-12"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang hub\"",
+    "since": "2026-10-05",
+    "until": "2026-10-12"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-10-05",
+    "until": "2026-10-12"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-10-05",
+    "until": "2026-10-12"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-10-05",
+    "until": "2026-10-12"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "maganghub",
+    "since": "2026-10-12",
+    "until": "2026-10-19"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang hub\"",
+    "since": "2026-10-12",
+    "until": "2026-10-19"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-10-12",
+    "until": "2026-10-19"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-10-12",
+    "until": "2026-10-19"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-10-12",
+    "until": "2026-10-19"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "maganghub",
+    "since": "2026-10-19",
+    "until": "2026-10-26"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang hub\"",
+    "since": "2026-10-19",
+    "until": "2026-10-26"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang nasional\"",
+    "since": "2026-10-19",
+    "until": "2026-10-26"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"magang kemnaker\"",
+    "since": "2026-10-19",
+    "until": "2026-10-26"
+  },
+  {
+    "fase": "fase3_penempatan",
+    "kueri": "\"pemagangan nasional\"",
+    "since": "2026-10-19",
+    "until": "2026-10-26"
+  }
+]

@@ -6,13 +6,13 @@ sesi_threads.json
 accounts.db*
 
 # Data (berisi konten pengguna X)
-data/raw/*
-data/processed/*
-data/lexicon/*.csv
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/lexicon/.gitkeep
-
+# data/raw/*
+# data/processed/*
+# data/lexicon/*.csv
+# !data/raw/.gitkeep
+# !data/processed/.gitkeep
+# !data/lexicon/.gitkeep
+#
 # Python
 .venv/
 __pycache__/
