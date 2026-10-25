@@ -1,10 +1,10 @@
 # Hasil pengambilan X
 
-Diperbarui: 2026-10-25T23:20:06+07:00
+Diperbarui: 2026-10-25T23:39:12+07:00
 
-- Unggahan mentah unik: 462.
-- Kandidat sesudah pembersihan otomatis: 345.
-- Dikecualikan oleh aturan penawaran promosi: 45; ditahan untuk review promosi: 30.
+- Unggahan mentah unik: 659.
+- Kandidat sesudah pembersihan otomatis: 522.
+- Dikecualikan oleh aturan penawaran promosi: 46; ditahan untuk review promosi: 40.
 - Interval diperiksa sampai kondisi berhenti yang tercatat: 0/17.
 - Teks yang diketahui terpotong dalam data mentah: 9.
 - Rentang penelitian: 1 Juli sampai 25 Oktober 2026; batas akhir eksklusif 26 Oktober.
