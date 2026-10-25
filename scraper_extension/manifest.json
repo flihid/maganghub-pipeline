@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "MagangHub X Collector",
+  "version": "1.0.0",
+  "description": "Collect visible X search posts locally, with resumable daily jobs.",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://x.com/*"],
+  "background": {"service_worker": "worker.js", "type": "module"},
+  "action": {"default_title": "Open MagangHub Collector"},
+  "content_scripts": [{"matches": ["https://x.com/*"], "js": ["core.js", "content.js"], "run_at": "document_idle"}]
+}

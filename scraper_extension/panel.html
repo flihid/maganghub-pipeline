@@ -1,0 +1,11 @@
+<!doctype html><html lang="id"><meta charset="utf-8"><title>MagangHub X Collector</title>
+<link rel="stylesheet" href="panel.css"><body><main>
+<h1>MagangHub X Collector</h1>
+<p>Jalankan di Brave yang sudah login X. Post dan progres disimpan lokal. Browser harus tetap terbuka.</p>
+<p><strong>Pilot:</strong> maksimal 100 post mentah per fase. <strong>Pengambilan penuh:</strong> batas total mengikuti konfigurasi. Jumlah bersih dihitung setelah pemeriksaan.</p>
+<label for="config">Konfigurasi — periksa tahun dan tanggal program sebelum Start</label><textarea id="config" spellcheck="false"></textarea>
+<div class="buttons"><button id="pilot">Start pilot</button><button id="full">Start pengambilan penuh</button><button id="resume">Lanjutkan progres</button><button id="stop">Hentikan</button><button id="export">Ekspor JSON</button></div>
+<h2>Status</h2><pre id="status">Memuat…</pre><p id="error" role="alert"></p>
+<p>Ekstensi hanya membaca hasil pencarian dan menggulir halaman. Jika login ditolak atau X membatasi akses, pengambilan berhenti. Jangan mengganti kueri atau menutup tab pengambilan saat berjalan.</p>
+<p>Data ekspor masih memuat teks dan username publik. Simpan privat, lalu gunakan import_browser_export.py dan 03_preprocess.py.</p>
+</main><script src="core.js"></script><script src="panel.js"></script></body></html>

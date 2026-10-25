@@ -2,6 +2,8 @@
 sesi_x.json
 sesi_threads.json
 .salt
+.twscrape/
+accounts.db*
 
 # Data (berisi konten pengguna X)
 data/raw/*

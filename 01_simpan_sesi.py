@@ -14,17 +14,38 @@ Cara pakai (PowerShell):
     python 01_simpan_sesi.py
 """
 
+import os
 import sys
 from pathlib import Path
+from threading import Event, Thread
+from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
 import config
 
 
+def tunggu_enter(page) -> None:
+    """Keep Playwright dispatching popup events while stdin waits elsewhere."""
+    selesai = Event()
+
+    def baca_enter():
+        try:
+            input()
+        finally:
+            selesai.set()
+
+    Thread(target=baca_enter, daemon=True).start()
+    while not selesai.is_set():
+        page.wait_for_timeout(200)
+
+
 def main() -> None:
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(
+            headless=False,
+            executable_path=os.environ.get("SCRAPER_BROWSER_EXECUTABLE") or None,
+        )
         context = browser.new_context(locale="id-ID")
         page = context.new_page()
         page.goto("https://x.com/login")
@@ -34,10 +55,13 @@ def main() -> None:
         print("Tunggu sampai timeline Beranda/Home muncul,")
         print("lalu kembali ke terminal ini dan tekan ENTER.")
         print("=" * 60)
-        input()
+        tunggu_enter(page)
 
-        if "login" in page.url or "flow" in page.url:
-            print("Sepertinya belum berhasil login (URL masih di halaman login).")
+        beranda = [p for p in context.pages
+                   if urlparse(p.url).hostname in ("x.com", "www.x.com")
+                   and urlparse(p.url).path.rstrip("/") == "/home"]
+        if not beranda:
+            print("Beranda X belum terbuka; sesi belum disimpan.")
             print("Ulangi skrip ini setelah login selesai.")
             browser.close()
             sys.exit(1)

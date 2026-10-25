@@ -10,13 +10,14 @@ data/processed/log_preprocessing.csv untuk laporan bagian C5):
   4. Saring relevansi dua jalur (relevansi.py): menyebut nama program, ATAU terjaring
      kata kunci jangkar dan memuat istilah khas program. Jalurnya dicatat di kolom
      `dasar_relevansi`; 30 sampel jalur konteks disimpan untuk pemeriksaan manual
-  5. Buang duplikat-dekat (teks sama persis setelah dinormalisasi -> copy-paste/spam)
-  6. Buang spam/bot (pola promosi, tagar berlebihan, teks terlalu pendek)
+  5. Tandai teks berulang dengan ID berbeda untuk review; pertahankan observasinya
+  6. Saring heuristik promosi/tagar; teks pendek ditandai, bukan otomatis dibuang
   7. Buang akun otomatis (config.AKUN_DIBUANG, mis. meta.ai), lalu tandai jenis akun:
      resmi / media / publik (tidak dibuang)
   8. Anonimisasi: username -> hash SHA-256 bergaram; @mention di teks -> @user; URL dihapus
   9. Tetapkan fase dan tanggal berdasarkan waktu WIB
- 10. Buat dua versi teks:
+ 10. Buat tiga versi teks:
+       teks_model_minimal : baseline transformer, pertahankan ekspresi asli
        teks_model : pembersihan ringan  -> untuk IndoBERT (sentimen) dan embedding BERTopic
        teks_token : pembersihan berat   -> untuk analisis frekuensi/n-gram dan representasi
                                            kata pada BERTopic (CountVectorizer)
@@ -40,6 +41,7 @@ import pandas as pd
 
 import config
 from relevansi import tandai_relevansi
+from promosi import klasifikasi_promosi, VERSION as VERSI_PROMOSI
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -143,6 +145,14 @@ def bersih_ringan(teks: str, kamus: dict) -> str:
     return re.sub(r"\s+", " ", t).strip()
 
 
+def bersih_minimal(teks: str) -> str:
+    """Transformer baseline: preserve negation, emoji, case and expressive spelling."""
+    t = html.unescape(teks)
+    t = POLA_URL.sub(" [URL] ", t)
+    t = POLA_MENTION.sub("[USER]", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
 def bersih_berat(teks_model: str) -> str:
     t = POLA_EMOJI.sub(" ", teks_model)
     t = t.replace("@user", " ")
@@ -206,17 +216,27 @@ def main() -> None:
     catat("4_tidak_relevan", a, df,
           f"lolos eksplisit={jalur.get('eksplisit', 0)}, lolos konteks={jalur.get('konteks', 0)}")
 
-    # 5. duplikat-dekat
+    # 5. Identical text is not necessarily a duplicate observation (Module 5 p22).
     df = df.assign(_kunci=df["text"].map(kunci_duplikat),
                    _ts=pd.to_datetime(df["created_at"], utc=True, format="ISO8601")).sort_values("_ts")
-    a = df; df = df.drop_duplicates("_kunci", keep="first").drop(columns=["_kunci", "_ts"])
-    catat("5_duplikat_dekat", a, df, "teks identik setelah normalisasi; disimpan yang paling awal")
+    df = df.assign(teks_berulang=df.duplicated(["platform", "_kunci"], keep=False))
+    df = df.drop(columns=["_kunci", "_ts"])
+    catat("5_tandai_teks_berulang", df, df,
+          f"{int(df['teks_berulang'].sum())} baris bertanda; ID berbeda dipertahankan untuk review")
 
     # 6. spam / bot
-    n_tag = df["text"].str.count(r"#\w+")
-    spam_pola = df["text"].str.contains(config.POLA_SPAM, case=False, regex=True)
-    a = df; df = df[~spam_pola & (n_tag <= config.MAKS_HASHTAG)]
-    catat("6_spam", a, df, f"pola promosi atau tagar > {config.MAKS_HASHTAG}")
+    hasil_promosi = pd.DataFrame(
+        [klasifikasi_promosi(t, config.MAKS_HASHTAG) for t in df['text']], index=df.index)
+    df = df.assign(promosi_status=hasil_promosi['keputusan'],
+                   promosi_alasan=hasil_promosi['alasan'], promosi_sinyal=hasil_promosi['sinyal'],
+                   versi_promosi=VERSI_PROMOSI)
+    audit = df[df['promosi_status'] != 'keep'][['tweet_id', 'platform', 'text', 'promosi_status',
+                                               'promosi_alasan', 'promosi_sinyal', 'versi_promosi']].copy()
+    audit['text'] = audit['text'].map(bersih_minimal)
+    audit.rename(columns={'tweet_id':'post_id', 'text':'teks_review'}).to_csv(
+        DIR_OUT / 'audit_penyaringan_promosi.csv', index=False, encoding='utf-8-sig')
+    a = df; df = df[df['promosi_status'] != 'exclude'].copy()
+    catat('6_promosi', a, df, VERSI_PROMOSI + '; exclude=penawaran; review tetap dipertahankan')
 
     # 7. akun otomatis dibuang, lalu jenis akun ditandai
     a = df; df = df[~df["username"].str.lower().isin(config.AKUN_DIBUANG)]
@@ -231,13 +251,15 @@ def main() -> None:
     kamus = muat_slang()
     df = df.assign(
         user_hash=df["username"].map(lambda x: hash_user(x, salt)),
+        teks_model_minimal=df["text"].map(bersih_minimal),
         teks_model=df["text"].map(lambda x: bersih_ringan(x, kamus)),
     )
     df = df.assign(teks_token=df["teks_model"].map(bersih_berat))
 
-    # teks terlalu pendek setelah dibersihkan
-    a = df; df = df[df["teks_token"].str.split().str.len() >= config.MIN_KATA]
-    catat("6b_terlalu_pendek", a, df, f"< {config.MIN_KATA} kata bermakna")
+    # Short sentiment can remain informative; this is a review flag, not removal.
+    df = df.assign(teks_pendek=df["teks_token"].str.split().str.len() < config.MIN_KATA)
+    catat("6b_tandai_teks_pendek", df, df,
+          f"{int(df['teks_pendek'].sum())} baris < {config.MIN_KATA} token; dipertahankan")
 
     # 9. waktu WIB, tanggal, fase
     ts = pd.to_datetime(df["created_at"], utc=True, format="ISO8601").dt.tz_convert("Asia/Jakarta")
@@ -249,7 +271,10 @@ def main() -> None:
     # url memuat username, sehingga identitas tetap bisa dilacak jika url disimpan.
     df = df.rename(columns={"tweet_id": "post_id"})
     kolom = ["post_id", "platform", "user_hash", "jenis_akun", "waktu_wib", "tanggal", "fase",
-             "dasar_relevansi", "n_reply", "n_repost", "n_like", "teks_model", "teks_token"]
+             "dasar_relevansi", "n_reply", "n_repost", "n_like", "teks_model_minimal", "teks_model", "teks_token",
+             "teks_berulang", "teks_pendek", "promosi_status", "promosi_alasan", "promosi_sinyal", "versi_promosi"]
+    # Preserve collection provenance and known truncation for manual review.
+    kolom += [c for c in ("scraped_at", "text_truncated", "collector", "language_filter", "post_lang") if c in df.columns]
     df = df[kolom].sort_values("waktu_wib").reset_index(drop=True)
 
     # Sampel acak post yang lolos lewat jalur konteks, untuk diperiksa manual oleh tim.
@@ -261,6 +286,12 @@ def main() -> None:
          .assign(relevan_manual="")
          .to_csv(DIR_OUT / "sampel_cek_relevansi_konteks.csv", index=False, encoding="utf-8-sig"))
 
+    # Preserve ambiguous observations separately so review does not erase criticism.
+    df.to_csv(DIR_OUT / 'maganghub_kandidat.csv', index=False, encoding='utf-8-sig')
+    df[df['promosi_status'] == 'review'].to_csv(
+        DIR_OUT / 'review_promosi.csv', index=False, encoding='utf-8-sig')
+    a = df; df = df[df['promosi_status'] == 'keep'].copy()
+    catat('11_tahan_untuk_review_promosi', a, df, 'tetap tersimpan di maganghub_kandidat.csv dan review_promosi.csv')
     ringkasan = df.groupby(["platform", "fase", "jenis_akun"]).size().unstack(fill_value=0)
     df.to_csv(DIR_OUT / "maganghub_bersih.csv", index=False, encoding="utf-8-sig")
     pd.DataFrame(log).to_csv(DIR_OUT / "log_preprocessing.csv", index=False, encoding="utf-8-sig")
@@ -272,7 +303,7 @@ def main() -> None:
     print(pd.DataFrame(log).to_string(index=False))
     print()
     print(ringkasan.to_string())
-    print(f"\nDataset bersih: {len(df)} post -> {DIR_OUT / 'maganghub_bersih.csv'}")
+    print(f"\nKandidat hasil penyaringan otomatis (perlu review): {len(df)} post -> {DIR_OUT / 'maganghub_bersih.csv'}")
 
 
 if __name__ == "__main__":

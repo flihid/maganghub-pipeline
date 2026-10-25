@@ -59,7 +59,9 @@ JENDELA_WAKTU = {
 # lebih banyak hasil dibanding satu rentang panjang.
 PANJANG_SUBJENDELA_HARI = 7
 
-BAHASA = "id"  # filter lang:id di pencarian X
+# Verified against X web search on 25 Oct 2026: Indonesian posts use `in`.
+# `lang:id` returned no results for a week where `lang:in` returned posts.
+BAHASA = "in"
 
 # ---------------------------------------------------------------------------
 # 3. BATAS & KESOPANAN CRAWLING (rate limiting)
@@ -109,6 +111,7 @@ AKUN_DIBUANG = [
 # ---------------------------------------------------------------------------
 # 6. HEURISTIK SPAM / BOT
 # ---------------------------------------------------------------------------
+# Legacy reference only. Active preprocessing uses explainable rules in promosi.py.
 POLA_SPAM = (
     r"link\s*di\s*bio|klik\s*link|cek\s*bio|dm\s*(?:aja|untuk|utk)|"
     r"jasa\s+(?:joki|pembuatan|daftar)|joki\s+(?:cv|maganghub|magang)|"
@@ -116,7 +119,7 @@ POLA_SPAM = (
     r"slot\s*gacor|judi|togel"
 )
 MAKS_HASHTAG = 5        # lebih dari ini dianggap spam tagar
-MIN_KATA = 4            # unggahan dengan kurang dari N kata setelah dibersihkan dibuang
+MIN_KATA = 4            # hanya menandai teks pendek untuk review; tidak otomatis dibuang
 
 # Kata yang muncul di hampir semua dokumen karena memang menjadi kueri.
 # Hanya dibuang dari kolom `teks_token`, tidak dari `teks_model`.

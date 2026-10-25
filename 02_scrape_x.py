@@ -2,7 +2,7 @@
 Langkah 2 - Scraping hasil pencarian X dengan Playwright.
 
 Alur per kombinasi (kata kunci x subjendela waktu):
-  1. Buka URL pencarian X tab "Terbaru" dengan filter lang:id since: until:
+  1. Buka URL pencarian X tab "Terbaru" dengan filter bahasa config, since: until:
   2. Tunggu post pertama muncul (halaman dirender JavaScript -> butuh Playwright,
      sama seperti timeline Mastodon di Tutorial 2).
   3. Ekstrak semua post yang sedang ada di DOM, lalu scroll ke bawah.
@@ -28,6 +28,7 @@ Cara pakai (PowerShell):
 import argparse
 import csv
 import json
+import os
 import random
 import re
 import sys
@@ -185,6 +186,7 @@ def scrape_satu(page, kata_kunci, fase, since, until, id_global, maks_post):
 
     meta = {
         "fase": fase, "kueri": kata_kunci, "since": since, "until": until,
+        "language_filter": config.BAHASA,
         "scraped_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
     page.goto(buat_url(kata_kunci, since, until), wait_until="domcontentloaded")
@@ -203,15 +205,19 @@ def scrape_satu(page, kata_kunci, fase, since, until, id_global, maks_post):
         return [], "timeout"
 
     terkumpul = {}
+    terlihat = set()
     tanpa_baru = 0
     status = "selesai"
     while len(terkumpul) < maks_post and tanpa_baru < config.MAKS_SCROLL_TANPA_BARU:
         baru = 0
         for item in page.evaluate(JS_EKSTRAK):
             rec = normalisasi(item, meta)
-            if rec and rec["tweet_id"] not in terkumpul and rec["tweet_id"] not in id_global:
-                terkumpul[rec["tweet_id"]] = rec
-                baru += 1
+            if rec:
+                if rec["tweet_id"] not in terlihat:
+                    terlihat.add(rec["tweet_id"])
+                    baru += 1
+                if rec["tweet_id"] not in terkumpul and rec["tweet_id"] not in id_global:
+                    terkumpul[rec["tweet_id"]] = rec
         tanpa_baru = 0 if baru else tanpa_baru + 1
 
         if POLA_ERROR.search(page.inner_text("body")):
@@ -257,12 +263,15 @@ def main() -> None:
     from playwright.sync_api import sync_playwright
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=args.headless)
+        browser = p.chromium.launch(
+            headless=args.headless,
+            executable_path=os.environ.get("SCRAPER_BROWSER_EXECUTABLE") or None,
+        )
         context = browser.new_context(storage_state=config.FILE_SESI, locale="id-ID")
         page = context.new_page()
 
         for i, (kk, fase, s, u) in enumerate(tugas, 1):
-            kunci = f"{fase}|{kk}|{s}|{u}"
+            kunci = f"{fase}|{kk}|{s}|{u}|lang:{config.BAHASA}"
             if kunci in selesai:
                 continue
 
@@ -292,9 +301,11 @@ def main() -> None:
                 print("Tunggu 15-30 menit, lalu jalankan ulang skrip ini - akan lanjut dari sini.")
                 break
 
-            if not args.uji:
+            if not args.uji and status in ("selesai", "tidak_ada_hasil"):
                 selesai.add(kunci)
                 simpan_progres(selesai)
+            elif not args.uji:
+                print("Cakupan parsial/gagal; kombinasi ini belum ditandai selesai.")
             time.sleep(random.uniform(*config.JEDA_ANTAR_KUERI_DETIK))
 
         browser.close()
