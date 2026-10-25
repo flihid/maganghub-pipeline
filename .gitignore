@@ -1,0 +1,17 @@
+# Rahasia lokal - jangan pernah di-commit
+sesi_x.json
+sesi_threads.json
+.salt
+
+# Data (berisi konten pengguna X)
+data/raw/*
+data/processed/*
+data/lexicon/*.csv
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/lexicon/.gitkeep
+
+# Python
+.venv/
+__pycache__/
+*.pyc
