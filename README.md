@@ -9,6 +9,9 @@ Nasional/MagangHub dalam tiga jendela waktu penyelenggaraan program, dari X (kor
 Threads (korpus pelengkap), lalu membersihkannya menjadi satu dataset siap analisis untuk
 pemodelan topik (BERTopic) dan klasifikasi sentimen (IndoBERT).
 
+Ringkasan hasil pengumpulan data untuk laporan bagian C ada di
+[Temuan pengumpulan data Threads](#temuan-pengumpulan-data-threads).
+
 ## Alur pipeline
 
 ```
@@ -266,7 +269,8 @@ Jumlah post per platform × fase × jenis akun, dan jumlah post per hari per pla
 5. Buang duplikat-dekat: teks identik setelah dinormalisasi (salin-tempel), disimpan yang paling awal.
    Berlaku lintas platform, sehingga post yang disalin dari X ke Threads hanya dihitung sekali
 6. Buang spam: pola promosi/joki (`config.POLA_SPAM`), lebih dari 5 tagar, atau kurang dari 4 kata bermakna
-7. Tandai jenis akun (resmi/media/publik) — tidak dibuang
+7. Buang akun otomatis (`config.AKUN_DIBUANG`, misalnya `meta.ai`), lalu tandai jenis akun
+   (resmi/media/publik) — akun resmi dan media tidak dibuang
 8. Pseudonimisasi username, hapus URL, ganti @mention
 9. Konversi waktu ke WIB, tetapkan fase, buang post di luar jendela penelitian
 
@@ -314,3 +318,178 @@ Jumlah post per platform × fase × jenis akun, dan jumlah post per hari per pla
   banyak post tidak relevan yang terjaring dan harus disaring di tahap *preprocessing*.
 - Jumlah balasan, repost, dan suka di Threads bergantung pada field yang tersedia di respons JSON;
   nilainya bisa kosong jika field tersebut tidak dikirim.
+
+---
+
+## Temuan pengumpulan data Threads
+
+Bagian ini merangkum hasil nyata pengumpulan data Threads sebagai bahan laporan bagian C.
+Semua angka berasal dari keluaran `02_scrape_threads.py`, `cek_cakupan.py`, dan
+`03_preprocess.py`. Waktu persis setiap putaran tercatat di `data/raw/log_scraping_threads.csv`.
+Sesuai prinsip privasi di bagian C6, nama akun pribadi tidak dicantumkan dan contoh post
+diparafrasekan.
+
+### C1. Kebutuhan data
+
+| Aspek | Spesifikasi |
+|---|---|
+| Platform | Threads (korpus pelengkap); X sebagai korpus utama |
+| Sasaran konten | Post publik berbahasa Indonesia tentang Program Magang Nasional/MagangHub |
+| Kata kunci | `maganghub`, `magang hub`, `magang nasional`, `magang kemnaker`, `pemagangan nasional` |
+| Periode | 1 Juli–25 Oktober 2026, dibagi tiga fase: pengumuman (1 Juli–31 Agustus), seleksi (1–20 September), penempatan (21 September–25 Oktober) |
+| Lingkup geografis | Tidak dibatasi secara eksplisit; dibatasi secara tidak langsung oleh bahasa dan topik program nasional |
+| Atribut konten | Teks post, waktu unggah, jumlah balasan, *repost*, dan suka |
+| Metadata | ID post, kata kunci yang menjaring, waktu pengambilan data |
+| Volume terkumpul | 3.862 post mentah unik → 2.166 post bersih |
+| Kriteria inklusi | (1) Teks menyebut nama program, **atau** (2) post terjaring kata kunci jangkar dan memuat istilah khas program; (3) diunggah di dalam periode penelitian |
+| Kriteria eksklusi | Duplikat dan salin-tempel, spam/promosi, akun otomatis (`meta.ai`), teks kurang dari 4 kata bermakna, post di luar periode |
+
+Tabel kebutuhan data per pertanyaan penelitian:
+
+| Pertanyaan penelitian | Kebutuhan data | Atribut utama | Alasan |
+|---|---|---|---|
+| RQ1: topik yang membentuk dukungan dan keberatan | Teks post publik tentang program | `teks_model`, `teks_token` | Bahan pemodelan topik |
+| RQ2: polaritas penilaian per topik | Teks post yang sama | `teks_model` | Bahan klasifikasi sentimen; kata negasi dipertahankan |
+| RQ3: pergeseran antarfase | Waktu unggah | `waktu_wib`, `fase` | Mengelompokkan post ke tiga fase penyelenggaraan |
+| Pemisahan opini publik dari narasi resmi | Jenis akun | `jenis_akun` | Post media dan akun resmi bukan opini publik |
+| Resonansi argumen (pelengkap) | Metrik keterlibatan | `n_reply`, `n_repost`, `n_like` | Menandai post yang paling banyak ditanggapi |
+
+### C2. Pipeline pengumpulan data
+
+```
+config.py ─► 01_simpan_sesi_threads.py ─► 02_scrape_threads.py ─► cek_cakupan.py ─► 03_preprocess.py
+ parameter     login manual (Instagram),    Playwright: cari,        cek rentang          gabung, relevansi,
+               simpan cookie sesi           scroll, baca JSON        tanggal & presisi    dedup, spam, akun,
+                                            → data/raw/*.jsonl                            anonimisasi, normalisasi
+                                                                                          → maganghub_bersih.csv
+```
+
+Teknologi: Python 3, Playwright (Chromium) untuk halaman dinamis, pandas untuk pengolahan,
+SHA-256 bergaram untuk pseudonimisasi, *Colloquial Indonesian Lexicon* (4.349 entri setelah
+digabung dengan kamus bawaan) untuk normalisasi kata tidak baku.
+
+### C3. Metode pengumpulan data
+
+| Aspek | Implementasi |
+|---|---|
+| Pendekatan | *Web scraping* dengan Playwright. API resmi Threads punya pencarian kata kunci, tetapi tanpa izin `threads_keyword_search` melalui *App Review* Meta, pencarian hanya mencakup post milik akun sendiri |
+| Otentikasi | Login manual sekali dengan akun Instagram; cookie sesi disimpan di `sesi_threads.json`. Keabsahan sesi diverifikasi dengan membuka halaman pencarian, karena login Instagram terjadi di tab baru |
+| Kueri | `https://www.threads.com/search?q=<kata kunci>&serp_type=default&filter=recent` (tab *Terbaru*) |
+| Ekstraksi | Tidak memakai selector HTML, karena Threads memakai nama class yang diacak. Data diambil dari JSON yang tertanam di halaman (`<script type="application/json" data-sjs>`) dan dari respons jaringan yang dimuat saat halaman di-scroll. Objek post dikenali dari kombinasi field `code`, `taken_at`, `caption.text`, dan `user.username` |
+| *Pagination* | *Infinite scroll*. Pencarian Threads tidak punya filter tanggal, sehingga hasil diurutkan dari yang terbaru |
+| Kondisi berhenti | (1) Batas post per kata kunci tercapai; (2) 6 kali scroll tanpa post baru terlihat; (3) 3 putaran berturut-turut hanya berisi post sebelum 1 Juli 2026; (4) status HTTP 429 |
+| *Rate limiting* | Jeda acak 5–9 detik antar-scroll (awalnya 2,5–5 detik, diperlambat setelah menerima status 429) dan 25–50 detik antar-kata kunci |
+| Deteksi duplikat | Per ID post saat pengumpulan; duplikat-dekat (teks identik setelah dinormalisasi) saat *preprocessing* |
+| Penanganan kegagalan | Status setiap kata kunci dicatat di log. Skrip berhenti otomatis ketika sesi kedaluwarsa atau menerima 429, menyimpan progres, dan dapat dilanjutkan tanpa mengulang kata kunci yang selesai |
+| Format luaran | JSON Lines (`data/raw/threads_<kata-kunci>.jsonl`), satu post per baris |
+| Penyimpanan | Lokal di laptop pengumpul data; tidak di-commit ke repository publik |
+
+Contoh struktur satu record mentah (nilai diganti contoh):
+
+```json
+{"tweet_id": "th_1234567890", "platform": "threads",
+ "url": "https://www.threads.com/@<username>/post/<kode>",
+ "username": "<username>", "created_at": "2026-10-20T05:00:00+00:00",
+ "text": "<isi post>", "n_reply": 3, "n_repost": 0, "n_like": 12,
+ "kueri": "maganghub", "scraped_at": "2026-10-25T07:12:03+00:00"}
+```
+
+### C4. Implementasi pipeline
+
+Pengumpulan dilakukan dalam tiga putaran:
+
+| Putaran | Perintah | Hasil |
+|---|---|---|
+| Uji coba | `--uji` | 20 post dari kata kunci `maganghub`, memastikan ekstraksi berjalan |
+| 1 | semua kata kunci, batas 800 per kata kunci | `maganghub` 800 (batas), `magang hub` 312 (hasil habis), `magang nasional` 800 (batas), `magang kemnaker` 800 (batas), `pemagangan nasional` 800 (batas). Total 3.532 |
+| 2 | `--kata maganghub --kata "magang kemnaker" --maks 4000` | `maganghub` +201, lalu dihentikan oleh status 429 sebelum `magang kemnaker` dijalankan. Total 3.733 |
+| 3 | sama, setelah jeda beberapa jam dan scroll diperlambat | `magang kemnaker` +73, `maganghub` +56; keduanya berhenti karena hasil pencarian habis. Total 3.862 |
+
+Cakupan akhir per kata kunci (`cek_cakupan.py`):
+
+| Kata kunci | Jumlah | Tertua | Terbaru | Menyebut nama program | Relevan total | Menjangkau fase 1 |
+|---|---:|---|---|---:|---:|---|
+| `maganghub` | 1.077 | 19 Sep | 25 Okt | 51% | 66% | Tidak |
+| `magang hub` | 312 | 10 Sep | 25 Okt | 80% | 81% | Tidak |
+| `magang kemnaker` | 873 | 7 Sep | 25 Okt | 55% | 75% | Tidak |
+| `magang nasional` | 800 | 29 Jun | 25 Okt | 92% | 92% | Ya |
+| `pemagangan nasional` | 800 | 15 Jun | 25 Okt | 6% | 6% | Ya |
+| **Total unik** | **3.862** | | | | | |
+
+Tahapan *preprocessing* (`log_preprocessing.csv`):
+
+| No. | Tahap | Sebelum | Sesudah | Dibuang | Keterangan |
+|---:|---|---:|---:|---:|---|
+| 1 | Gabung data mentah | 3.862 | 3.862 | 0 | 5 file |
+| 2 | Deduplikasi ID post | 3.862 | 3.862 | 0 | |
+| 3 | Teks kosong | 3.862 | 3.862 | 0 | |
+| 4 | Saring relevansi | 3.862 | 2.406 | 1.456 | Lolos eksplisit 2.066, lolos konteks 340 |
+| 5 | Duplikat-dekat | 2.406 | 2.291 | 115 | Teks identik; disimpan yang paling awal |
+| 6 | Spam | 2.291 | 2.259 | 32 | Pola promosi/joki atau lebih dari 5 tagar |
+| 7 | Akun otomatis | 2.259 | 2.234 | 25 | `meta.ai` |
+| 8 | Teks terlalu pendek | 2.234 | 2.170 | 64 | Kurang dari 4 kata bermakna |
+| 9 | Di luar periode | 2.170 | 2.166 | 4 | |
+
+Komposisi dataset akhir:
+
+| Fase | Media | Publik | Resmi | Total | % dataset | Post per hari |
+|---|---:|---:|---:|---:|---:|---:|
+| Fase 1: pengumuman (62 hari) | 2 | 140 | 1 | 143 | 6,6% | 2,3 |
+| Fase 2: seleksi (20 hari) | 19 | 517 | 16 | 552 | 25,5% | 27,6 |
+| Fase 3: penempatan (35 hari) | 71 | 1.353 | 47 | 1.471 | 67,9% | 42,0 |
+| **Total** | **92** | **2.010** | **64** | **2.166** | | |
+
+Akun resmi yang teridentifikasi: `kemnaker`, `maganghub.kemnaker`. Akun media dan informasi
+karier: `viralyn.daily`, `mcinews.id`, `titik_temu.news`, `satu_meja.id`,
+`temankarirofficial`, `internship.career`.
+
+### C5. Kualitas data dan keterbatasannya
+
+| Isu | Temuan | Dampak | Mitigasi |
+|---|---|---|---|
+| Kedalaman pencarian terbatas | Kata kunci utama tidak menjangkau sebelum September (`maganghub` berhenti di 19 Sep, `magang kemnaker` 7 Sep) walau dijalankan ulang dengan batas 4.000; status akhirnya "hasil habis", bukan batas skrip | Fase 1 kurang terwakili (6,6% dataset, 2,3 post/hari) | Fase 1 diisi kata kunci `magang nasional` yang menjangkau 29 Juni; korpus X dapat diarahkan langsung ke Juli–Agustus; RQ3 membandingkan **proporsi** topik per fase, bukan jumlah post; temuan fase 1 dilaporkan sebagai indikatif |
+| Bias volume antarfase | Jumlah post per hari naik dari 2,3 (fase 1) ke 42,0 (fase 3) | Tidak dapat dipisahkan apakah ini peningkatan diskusi yang nyata atau efek kedalaman pencarian | Dinyatakan sebagai keterbatasan; perbandingan memakai proporsi |
+| Presisi kata kunci rendah | Pencarian Threads tidak mendukung frasa persis; `pemagangan nasional` hanya 6% relevan | 37,7% data mentah tidak relevan | Saring relevansi; presisi per kata kunci dilaporkan |
+| Post relevan tanpa nama program | Pemeriksaan 10 sampel post yang terbuang menunjukkan sebagian besar membahas program tanpa menyebut namanya (misalnya soal *batch*, pencairan uang saku, atau absen yang harus disetujui mentor) | Saringan eksplisit saja akan membuang data relevan | Jalur relevansi konteks: menyelamatkan 340 post |
+| Validitas jalur konteks | 23 dari 30 sampel acak dinilai relevan secara manual (**presisi 76,7%**). Post dinilai relevan bila memuat setidaknya satu penanda khas program | Jalur konteks menyumbang ±14% post relevan, sehingga perkiraan *noise* di dataset akhir sekitar **3%** | Diterima sebagai kompromi; kolom `dasar_relevansi` memungkinkan analisis ulang tanpa jalur konteks |
+| Duplikasi | 115 post salin-tempel | Menggelembungkan frekuensi topik | Dibuang; disimpan versi paling awal |
+| Spam dan akun otomatis | 32 post promosi/joki; 25 jawaban asisten AI `meta.ai` | Bukan opini publik | Dibuang |
+| Dominasi akun | Satu akun pribadi menyumbang 33 post mentah | Opini segelintir akun sangat aktif dapat ikut membentuk gambaran | Dinyatakan sebagai keterbatasan; `user_hash` memungkinkan analisis per akun |
+| Pembatasan platform | Status 429 diterima pada putaran 2 | Pengumpulan terhenti sebagian | Skrip berhenti otomatis, jeda scroll diperlambat, pengambilan diulang setelah beberapa jam |
+| Bahasa tidak baku | Singkatan, *slang*, dan *code-mixing* | Mengganggu analisis berbasis kata | Normalisasi dengan leksikon 4.349 entri; dua versi teks untuk model dan untuk analisis kata |
+| Metrik keterlibatan | Bergantung pada field yang tersedia di respons JSON | Nilai bisa kosong | Dipakai sebagai pelengkap, bukan variabel utama |
+| Keterwakilan populasi | Pengguna Threads tidak mewakili seluruh lulusan baru Indonesia; post terhapus atau dari akun privat tidak terjaring | Temuan bersifat indikatif atas wacana daring | Tidak digeneralisasi sebagai opini nasional |
+
+### C6. Pertimbangan etika
+
+- **Konten publik dan login.** Data yang diambil hanya post yang tampil di hasil pencarian publik,
+  tetapi pencarian Threads mensyaratkan login. Ketentuan layanan Meta/Threads tentang pengumpulan
+  data otomatis perlu dirujuk langsung dalam laporan.
+- **Tidak menembus pembatasan.** Ketika platform menolak akses (login yang diblokir saat mencoba
+  X, status 429 di Threads), pengumpulan dihentikan. Pipeline tidak menyamarkan otomatisasi atau
+  menembus pembatasan login.
+- **Crawling yang sopan.** Jeda acak antar-scroll dan antar-kata kunci, diperlambat setelah
+  menerima 429.
+- **Minimalisasi data.** Nama tampilan, foto profil, bio, jumlah pengikut, dan media tidak diambil.
+  Username dan URL hanya ada di data mentah lokal dan dihapus di dataset bersih.
+- **Pseudonimisasi.** Username diganti hash SHA-256 bergaram (`user_hash`); garam disimpan lokal
+  dan tidak dipublikasikan. Pseudonimisasi tidak sama dengan anonimisasi, karena teks post publik
+  tetap dapat dicari, sehingga kutipan di laporan diparafrasekan.
+- **Penyimpanan dan akses.** Cookie sesi, garam, data mentah, dan data bersih tercantum di
+  `.gitignore` dan tidak masuk repository publik. Pertukaran data antaranggota dilakukan lewat
+  penyimpanan berbagi berakses terbatas.
+- **Risiko akun pengumpul.** Akun Threads terhubung ke akun Instagram pribadi pengumpul data;
+  pembatasan akibat aktivitas otomatis berisiko berdampak pada akun tersebut.
+
+### C7. Ringkasan
+
+Korpus Threads terdiri dari 2.166 post bersih (2.010 di antaranya dari akun publik) yang
+dikumpulkan dari lima kata kunci melalui *scraping* berbasis JSON dengan Playwright, lalu
+disaring dengan aturan relevansi dua jalur yang telah divalidasi (presisi 76,7%). Korpus ini
+menyediakan teks untuk RQ1 dan RQ2 serta penanda waktu dan fase untuk RQ3. Keterbatasan
+utamanya adalah kedalaman pencarian Threads yang tidak menjangkau fase 1 untuk kata kunci
+utama; kekurangan ini dikompensasi oleh korpus X dan perbandingan berbasis proporsi.
+
+> **Status korpus X:** menunggu data dari anggota tim yang menjalankan `02_scrape_x.py`.
+> Setelah file `data/raw/x_*.jsonl` digabung, jalankan ulang `03_preprocess.py` dan perbarui
+> angka di bagian ini.

@@ -12,7 +12,8 @@ data/processed/log_preprocessing.csv untuk laporan bagian C5):
      `dasar_relevansi`; 30 sampel jalur konteks disimpan untuk pemeriksaan manual
   5. Buang duplikat-dekat (teks sama persis setelah dinormalisasi -> copy-paste/spam)
   6. Buang spam/bot (pola promosi, tagar berlebihan, teks terlalu pendek)
-  7. Tandai jenis akun: resmi / media / publik (tidak dibuang)
+  7. Buang akun otomatis (config.AKUN_DIBUANG, mis. meta.ai), lalu tandai jenis akun:
+     resmi / media / publik (tidak dibuang)
   8. Anonimisasi: username -> hash SHA-256 bergaram; @mention di teks -> @user; URL dihapus
   9. Tetapkan fase dan tanggal berdasarkan waktu WIB
  10. Buat dua versi teks:
@@ -217,7 +218,9 @@ def main() -> None:
     a = df; df = df[~spam_pola & (n_tag <= config.MAKS_HASHTAG)]
     catat("6_spam", a, df, f"pola promosi atau tagar > {config.MAKS_HASHTAG}")
 
-    # 7. jenis akun
+    # 7. akun otomatis dibuang, lalu jenis akun ditandai
+    a = df; df = df[~df["username"].str.lower().isin(config.AKUN_DIBUANG)]
+    catat("7_akun_otomatis", a, df, "akun di config.AKUN_DIBUANG: " + ", ".join(config.AKUN_DIBUANG))
     u = df["username"].str.lower()
     df = df.assign(jenis_akun="publik")
     df.loc[u.isin(config.AKUN_MEDIA), "jenis_akun"] = "media"

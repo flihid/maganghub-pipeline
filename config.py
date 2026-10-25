@@ -86,11 +86,24 @@ FILE_SALT = ".salt"                              # untuk hashing username - JANG
 # supaya analisis opini publik bisa memisahkan pernyataan resmi dan berita.
 # Periksa ulang handle ini di X sebelum dipakai; tulis huruf kecil tanpa '@'.
 AKUN_RESMI = [
+    # X
     "kemnakerri",
+    # Threads (diperiksa dari 15 akun paling aktif di data mentah)
+    "kemnaker", "maganghub.kemnaker",
 ]
 AKUN_MEDIA = [
+    # X
     "kompascom", "detikcom", "cnnindonesia", "tempodotco",
     "cnbcindonesia", "kumparan", "liputan6dotcom", "tribunnews",
+    # Threads: media/berita
+    "viralyn.daily", "mcinews.id", "titik_temu.news", "satu_meja.id",
+    # Threads: akun informasi karier/lowongan (informasi, bukan opini pribadi)
+    "temankarirofficial", "internship.career",
+]
+# Akun otomatis yang DIBUANG karena isinya bukan ekspresi manusia,
+# misalnya jawaban asisten AI yang dipanggil pengguna di kolom balasan.
+AKUN_DIBUANG = [
+    "meta.ai",
 ]
 
 # ---------------------------------------------------------------------------
