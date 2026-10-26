@@ -1,0 +1,10 @@
+﻿kolom,n,missing,nol,pct_missing
+n_reply,5257,0,1928,0.0
+n_repost,5257,0,3578,0.0
+n_like,5257,0,1123,0.0
+n_quote,5257,129,3574,0.0245
+post_lang,5257,12,-,0.0023
+conversation_id,5257,129,-,0.0245
+content_type,5257,129,-,0.0245
+user_hash,5257,0,-,0.0
+text_truncated,5257,5128,-,0.9755

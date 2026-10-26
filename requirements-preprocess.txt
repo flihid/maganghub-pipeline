@@ -1,0 +1,5 @@
+# Dependensi preprocessing TK2 (preprocess_tk2.py). Versi yang dipakai pada run
+# 20261026_d11a2b74c6: Python 3.13.7, pandas 3.0.0, numpy 2.4.2, scikit-learn 1.8.0.
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.4

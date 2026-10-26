@@ -1,0 +1,167 @@
+{
+  "snapshot_id": "20261026_d11a2b74c6",
+  "created_utc": "2026-10-26T07:43:19.399371+00:00",
+  "created_wib": "2026-10-26T14:43:19.399371+07:00",
+  "method": "Per-file sequential read of bytes up to size at read time, truncated at the last physical newline. NOT atomic across files. Raw files were not modified.",
+  "raw_dir": "data/raw",
+  "files": [
+    {
+      "platform": "x",
+      "file": "x_fase1_pengumuman.jsonl",
+      "size_at_read": 2250534,
+      "byte_limit": 2250534,
+      "incomplete_tail_bytes": 0,
+      "n_records": 2473,
+      "sha256": "74db1daba0a1ee21427da4eecb2a8d05e382e07fef9d09d0fa4058328b1bac12"
+    },
+    {
+      "platform": "x",
+      "file": "x_fase2_seleksi.jsonl",
+      "size_at_read": 803979,
+      "byte_limit": 803979,
+      "incomplete_tail_bytes": 0,
+      "n_records": 936,
+      "sha256": "1bedc78341afdc276d0cbb28a5b8485588ebfe4bb3c946dfef2109258b6574b8"
+    },
+    {
+      "platform": "x",
+      "file": "x_fase3_penempatan.jsonl",
+      "size_at_read": 1647474,
+      "byte_limit": 1647474,
+      "incomplete_tail_bytes": 0,
+      "n_records": 1848,
+      "sha256": "0b7ed2960face962bed9826c434acee09ada54332131311de2076f297ec8dadb"
+    },
+    {
+      "platform": "threads",
+      "file": "threads_magang-hub.jsonl",
+      "size_at_read": 530003,
+      "byte_limit": 530003,
+      "incomplete_tail_bytes": 0,
+      "n_records": 899,
+      "sha256": "93f418f2dbad84cb414d2177a2a69387f94f10cf5dc7f60fb3eac95079d649f4"
+    },
+    {
+      "platform": "threads",
+      "file": "threads_magang-kemnaker.jsonl",
+      "size_at_read": 1720243,
+      "byte_limit": 1720243,
+      "incomplete_tail_bytes": 0,
+      "n_records": 2684,
+      "sha256": "c83e02e858724aea8a5e34ba00e27a229c4e5502b6601293bfab4c90a611eef5"
+    },
+    {
+      "platform": "threads",
+      "file": "threads_magang-nasional.jsonl",
+      "size_at_read": 189382,
+      "byte_limit": 189382,
+      "incomplete_tail_bytes": 0,
+      "n_records": 262,
+      "sha256": "7e48ea86c6daa920b36c5379c0fd74367ab523706420f50a1be17e8aecfedeaf"
+    },
+    {
+      "platform": "threads",
+      "file": "threads_maganghub.jsonl",
+      "size_at_read": 738510,
+      "byte_limit": 738510,
+      "incomplete_tail_bytes": 0,
+      "n_records": 1416,
+      "sha256": "c8d4afc4e21b5876790ee7bc2d56aceb5742397cf09b7bd9dc009a68b7fe1ae4"
+    },
+    {
+      "platform": "threads",
+      "file": "threads_pemagangan-nasional.jsonl",
+      "size_at_read": 478288,
+      "byte_limit": 478288,
+      "incomplete_tail_bytes": 0,
+      "n_records": 767,
+      "sha256": "8ba43a440bed87a7ab5f1bcaa73e3c32393e6a4eab981b75927be16df2a616b3"
+    }
+  ],
+  "supporting_files": [
+    {
+      "file": "browser_collection_log.jsonl",
+      "size_at_read": 265872,
+      "sha256": "90b7f9b329a3b27e8460ba21e5d8605b3a1e6a29fe768658e66efc6ad451a7b5"
+    },
+    {
+      "file": "browser_jobs.json",
+      "size_at_read": 11331,
+      "sha256": "0df048eb59216bf7449bde158f12468f410729cddaba7ece30499e5049bcb8d4"
+    },
+    {
+      "file": "twscrape_state_0dc0bc6dee19ae0c.json",
+      "size_at_read": 95482,
+      "sha256": "bd88687e4292ab0eadea96c00ddab82538be96aab13d6ead604910719d77c818"
+    },
+    {
+      "file": "twscrape_state_1cc7817388059eb3.json",
+      "size_at_read": 124144,
+      "sha256": "1b8d260db62f156c4fc8bbb4bd84e7f61c83c4c7eee5d6fb1748820f4bb2fb90"
+    },
+    {
+      "file": "twscrape_state_a63bf449cb98bb5d.json",
+      "size_at_read": 12923,
+      "sha256": "0d4eef720f190254dbfde5a466b2db75dd5058c380ed4566ad692016c76b640f"
+    },
+    {
+      "file": "twscrape_state_c3c01891196271e5.json",
+      "size_at_read": 57358,
+      "sha256": "3ced46476ba0cbfad3f6dfd9b4a917a081d2b231540302856b43e7f9a1bfc673"
+    },
+    {
+      "file": "twscrape_state_d7a41a06291e49af.json",
+      "size_at_read": 7471,
+      "sha256": "edc602d964419663d6a44c1bff7fdb5ae05b082d69c49a21bcd0999fdc45e257"
+    },
+    {
+      "file": "log_scraping_threads.csv",
+      "size_at_read": 905,
+      "sha256": "7ea42c096fa18a1139404afbfd4d86d87afc4334067abfe9728c7bb4d603052a"
+    },
+    {
+      "file": "progres_threads.json",
+      "size_at_read": 101,
+      "sha256": "753b26d96efea789f4dab813238da8089b0f6828d26d7054adfc64af113ff2bf"
+    }
+  ],
+  "totals": {
+    "x": {
+      "files": 3,
+      "records": 5257
+    },
+    "threads": {
+      "files": 5,
+      "records": 6028
+    }
+  },
+  "code": {
+    "tk2prep": "tk2prep_1.0.0",
+    "git_head": "2428ed6b70d5b1ce100e67a9fcd8b4ac6318fed7",
+    "git_dirty_unknown": true,
+    "file_hash": {
+      "config.py": "0f0e2ea08dade8f7",
+      "preprocess_tk2.py": "422839208cfd3269",
+      "promosi.py": "30b07c6afe25022d",
+      "relevansi.py": "f38fdf3e8f4b704a",
+      "tk2prep/__init__.py": "d27620b7dc4d565e",
+      "tk2prep/cakupan.py": "0907e1de1363c21a",
+      "tk2prep/duplikat.py": "e7e4a266e4ac9487",
+      "tk2prep/laporan.py": "1bd1e0c393da438c",
+      "tk2prep/muat.py": "9b393605d85974b8",
+      "tk2prep/pipeline.py": "abf0829bec522f5c",
+      "tk2prep/review.py": "170dc5f5cea55b6f",
+      "tk2prep/snapshot.py": "0fa4d93a539d8c82",
+      "tk2prep/teks.py": "162bed81bbaf1880"
+    }
+  },
+  "dependencies": {
+    "python": "3.13.7",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pandas": "3.0.0",
+    "numpy": "2.4.2",
+    "scikit-learn": "1.8.0",
+    "twscrape": null
+  },
+  "note": "No environment variables, cookies, or session databases are read or stored."
+}

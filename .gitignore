@@ -17,3 +17,6 @@ accounts.db*
 .venv/
 __pycache__/
 *.pyc
+
+# Snapshot preprocessing (salinan raw berisi username; dapat direkonstruksi dari manifest)
+data/interim/

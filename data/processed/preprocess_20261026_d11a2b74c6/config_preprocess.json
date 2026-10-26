@@ -1,0 +1,95 @@
+{
+  "tk2prep": "tk2prep_1.0.0",
+  "promosi": "promosi_v3",
+  "relevansi": "relevansi_v2",
+  "teks": "teks_v1",
+  "seed": 20261026,
+  "maks_sampel": 200,
+  "n_kalibrasi": 40,
+  "min_token_pendek": 4,
+  "near_dup": {
+    "ambang": 0.9,
+    "min_chars": 40,
+    "fitur": "tfidf char_wb 3-5"
+  },
+  "jendela_waktu": {
+    "fase1_pengumuman": [
+      "2026-07-01",
+      "2026-09-01"
+    ],
+    "fase2_seleksi": [
+      "2026-09-01",
+      "2026-09-21"
+    ],
+    "fase3_penempatan": [
+      "2026-09-21",
+      "2026-10-26"
+    ]
+  },
+  "interval": "[awal 00:00 WIB, akhir 00:00 WIB)",
+  "pola_relevan_khas": "magang\\s*hub|magang\\s+kemn?a?ker|magang\\s+kemenaker|maganghub",
+  "pola_relevan_generik": "magang\\s+nasional|pemagangan\\s+nasional",
+  "pola_konteks": "batch\\s*\\d|uang\\s*saku|mentor|absen|presensi|pencairan|\\bcair\\b|pemagang|peserta\\s+magang|kemnaker|kemenaker|laporan\\s+harian|logbook",
+  "kueri_jangkar_tunggal": [
+    "maganghub",
+    "magang hub",
+    "magang kemnaker"
+  ],
+  "akun_resmi": [
+    "kemnakerri",
+    "kemnaker",
+    "maganghub.kemnaker"
+  ],
+  "akun_media": [
+    "kompascom",
+    "detikcom",
+    "cnnindonesia",
+    "tempodotco",
+    "cnbcindonesia",
+    "kumparan",
+    "liputan6dotcom",
+    "tribunnews",
+    "viralyn.daily",
+    "mcinews.id",
+    "titik_temu.news",
+    "satu_meja.id",
+    "temankarirofficial",
+    "internship.career"
+  ],
+  "akun_dibuang": [
+    "meta.ai"
+  ],
+  "maks_hashtag": 5,
+  "slang_v1": {
+    "yg": "yang",
+    "dgn": "dengan",
+    "utk": "untuk",
+    "krn": "karena",
+    "tdk": "tidak",
+    "gak": "tidak",
+    "nggak": "tidak",
+    "ngga": "tidak",
+    "enggak": "tidak",
+    "gk": "tidak",
+    "blm": "belum",
+    "udh": "sudah",
+    "sdh": "sudah",
+    "bgt": "banget",
+    "bngt": "banget",
+    "skrg": "sekarang",
+    "knp": "kenapa",
+    "gmn": "bagaimana",
+    "dlm": "dalam",
+    "ttg": "tentang",
+    "jgn": "jangan",
+    "bkn": "bukan"
+  },
+  "leksikon_colloquial": {
+    "file": "data/lexicon/colloquial-indonesian-lexicon.csv",
+    "dipakai": false,
+    "alasan": "banyak entri ambigu/konteks; hanya dicatat sebagai opsi"
+  },
+  "salt": "file lokal .salt (tidak disalin ke output)",
+  "annotations_dir": "data/annotations",
+  "n_keputusan_manusia": 0
+}
