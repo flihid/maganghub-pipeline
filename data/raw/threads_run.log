@@ -1,0 +1,21 @@
+[1/5] maganghub ... 800 post baru (batas_maks) | post tertua yang terlihat: 2026-09-19
+[2/5] magang hub ... 800 post baru (batas_maks) | post tertua yang terlihat: 2026-07-20
+[3/5] magang nasional ... 262 post baru (selesai) | post tertua yang terlihat: 2026-06-29
+[4/5] magang kemnaker ... 800 post baru (batas_maks) | post tertua yang terlihat: 2026-09-08
+[5/5] pemagangan nasional ... 726 post baru (dibatasi_429) | post tertua yang terlihat: 2025-12-16
+Threads menolak permintaan. Progres disimpan; berhenti di sini.
+Jangan langsung diulang - tunggu minimal beberapa jam.
+Selesai. Total post Threads tersimpan: 3408. Log: data/raw/log_scraping_threads.csv
+=== restart setelah 429 (Mon Oct 26 04:23:58 WIB 2026) ===
+[5/5] pemagangan nasional ... 41 post baru (selesai) | post tertua yang terlihat: 2025-12-16
+Selesai. Total post Threads tersimpan: 3449. Log: data/raw/log_scraping_threads.csv
+=== rerun batas 3000: --kata maganghub --kata magang hub --kata magang kemnaker (Mon Oct 26 04:29:30 WIB 2026) ===
+[1/3] maganghub ... 596 post baru (selesai) | post tertua yang terlihat: 2026-09-10
+[2/3] magang hub ... 99 post baru (selesai) | post tertua yang terlihat: 2026-07-20
+[3/3] magang kemnaker ... 2 post baru (selesai) | post tertua yang terlihat: 2026-10-08
+Selesai. Total post Threads tersimpan: 4146. Log: data/raw/log_scraping_threads.csv
+=== rerun scroll-tanpa-baru=30: magang kemnaker, magang hub, maganghub (Mon Oct 26 10:41:24 WIB 2026) ===
+[1/3] magang kemnaker ... 1882 post baru (dibatasi_429) | post tertua yang terlihat: 2025-12-23
+Threads menolak permintaan. Progres disimpan; berhenti di sini.
+Jangan langsung diulang - tunggu minimal beberapa jam.
+Selesai. Total post Threads tersimpan: 6028. Log: data/raw/log_scraping_threads.csv

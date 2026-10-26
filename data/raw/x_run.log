@@ -1,0 +1,18 @@
+=== X rerun 8 hari fase3 per-day 600 (Mon Oct 26 10:46:31 WIB 2026) ===
+fase3_penempatan | 2026-10-22 | total unik tersimpan 2646
+  +180 post | daily_limit_partial
+fase3_penempatan | 2026-10-20 | total unik tersimpan 2826
+  +145 post | daily_limit_partial
+fase3_penempatan | 2026-10-24 | total unik tersimpan 2971
+  +103 post | stream_ended_unverified
+fase3_penempatan | 2026-10-19 | total unik tersimpan 3074
+  +72 post | stream_ended_unverified
+fase3_penempatan | 2026-10-21 | total unik tersimpan 3146
+  +303 post | daily_limit_partial
+fase3_penempatan | 2026-10-23 | total unik tersimpan 3449
+  +81 post | stream_ended_unverified
+fase3_penempatan | 2026-10-25 | total unik tersimpan 3530
+  +2 post | stream_ended_unverified
+fase3_penempatan | 2026-10-18 | total unik tersimpan 3532
+  +4 post | stream_ended_unverified
+{"status": "job_pass_finished_not_a_census", "total_unique": 3536, "sdk_counts_per_phase": {"fase1_pengumuman": 1226, "fase2_seleksi": 528, "fase3_penempatan": 1653}}

@@ -145,7 +145,7 @@ KATA_KUNCI_THREADS = [
 # Jika berbeda dengan di bawah, tempel di sini dan ganti kata kuncinya dengan {q}.
 URL_PENCARIAN_THREADS = "https://www.threads.com/search?q={q}&serp_type=default&filter=recent"
 
-MAKS_POST_THREADS_PER_KUERI = 800
+MAKS_POST_THREADS_PER_KUERI = 3000
 # Hasil diurutkan dari yang terbaru. Scroll dihentikan jika N putaran berturut-turut
 # hanya berisi post yang lebih tua dari awal jendela penelitian.
 MAKS_SCROLL_TERLALU_LAMA = 3
