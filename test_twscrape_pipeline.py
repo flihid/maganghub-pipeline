@@ -7,7 +7,7 @@ import tempfile
 from types import SimpleNamespace as NS
 import unittest
 from unittest.mock import patch
-from datetime import datetime
+from datetime import datetime, timezone
 
 import twscrape_pipeline as pipeline
 
@@ -30,6 +30,7 @@ class FakeAPI:
     async def search_raw(self, query, limit, kv):
         self.calls += 1
         assert kv == {'product': 'Latest'}
+        assert limit == -1
         yield NS(json=lambda: self.rows)
         if self.error:
             raise RuntimeError('Do not expose session-like exception text')
@@ -60,7 +61,10 @@ class CollectorTests(unittest.TestCase):
         jobs = pipeline.make_jobs()
         self.assertEqual(len(jobs), 117)
         self.assertEqual([x['fase'] for x in jobs[:3]], list(pipeline.config.JENDELA_WAKTU))
-        self.assertIn('since:2026-08-30 until:2026-09-01', pipeline.search_query(jobs[0]))
+        start, end = pipeline.window_bounds(jobs[0])
+        self.assertEqual(start.astimezone(timezone.utc).isoformat(), '2026-08-30T17:00:00+00:00')
+        self.assertEqual(int(end.timestamp()-start.timestamp()),86400)
+        self.assertIn(f'since_time:{int(start.timestamp())} until_time:{int(end.timestamp())}', pipeline.search_query(jobs[0]))
         # Aug 30 17:00 UTC is Aug 31 00:00 WIB, included in that local day.
         self.assertIsNotNone(pipeline.normalize(tweet(timestamp='2026-08-30T17:00:00+00:00'), jobs[0]))
         self.assertIsNone(pipeline.normalize(tweet(timestamp='2026-08-30T16:59:59+00:00'), jobs[0]))
@@ -121,6 +125,26 @@ class CollectorTests(unittest.TestCase):
             _, state, rows = self.run_collection(Path(folder), FakeAPI([tweet(), tweet('101')]), per_phase=1)
             self.assertEqual(len(rows), 1)
             self.assertEqual(next(iter(state['jobs'].values()))['status'], 'quota_partial')
+
+    def test_excluded_context_does_not_spend_day_quota(self):
+        class PagesAPI(FakeAPI):
+            async def search_raw(self, query, limit, kv):
+                assert limit == -1
+                yield NS(json=lambda:[tweet('90',timestamp='2026-08-30T05:00:00+00:00')])
+                yield NS(json=lambda:[tweet('100'),tweet('101')])
+        with tempfile.TemporaryDirectory() as folder:
+            _,state,rows=self.run_collection(Path(folder),PagesAPI([]),per_day=2)
+            self.assertEqual(len(rows),2)
+            log=next(iter(state['jobs'].values()))
+            self.assertEqual(log['excluded_outside_window'],1)
+            self.assertEqual(log['eligible_unique'],2)
+            self.assertEqual(log['pages'],2)
+            self.assertEqual(log['status'],'eligible_day_limit_partial')
+
+    def test_page_budget_marks_partial(self):
+        with tempfile.TemporaryDirectory() as folder:
+            _,state,_=self.run_collection(Path(folder),FakeAPI([tweet()]),max_pages=1)
+            self.assertEqual(next(iter(state['jobs'].values()))['status'],'page_budget_partial')
 
     def test_missing_session_never_calls_sdk(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(pipeline, 'SESSION', Path(folder)/'absent.db'), \

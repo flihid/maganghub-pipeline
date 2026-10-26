@@ -58,6 +58,9 @@ def collection_jobs(args, records):
             if line.strip()] if log_path.exists() else []
     tried = {(r.get('fase'), r.get('since')) for r in logs
              if r.get('collector') == 'twscrape_0.20.1' and r.get('processed_once')}
+    previous = {(r.get('fase'), r.get('since')): r.get('status') for r in logs
+                if r.get('collector') == 'twscrape_0.20.1'}
+    partial = {'daily_limit_partial', 'eligible_day_limit_partial', 'page_budget_partial', 'quota_partial'}
     populated = {datetime.fromisoformat(r['created_at']).astimezone(WIB).date().isoformat()
                  for r in records}
 
@@ -76,16 +79,34 @@ def collection_jobs(args, records):
     buckets = []
     for phase in config.JENDELA_WAKTU:
         bucket = spread(sorted((j for j in jobs if j['fase'] == phase), key=lambda j: j['since']))
-        bucket.sort(key=lambda j: ((phase, j['since']) in tried, j['since'] in populated))
+        bucket.sort(key=lambda j: (0 if previous.get((phase,j['since'])) in partial else
+                                   1 if (phase,j['since']) not in tried else 2,
+                                   j['since'] in populated))
         buckets.append(bucket)
     return [bucket[i] for i in range(max(map(len, buckets))) for bucket in buckets if i < len(bucket)]
 
 
 def search_query(job):
-    # Date-only search boundaries may use UTC. Cover both UTC dates intersecting
-    # the WIB day, then enforce the exact local interval in normalize().
-    since = (date.fromisoformat(job['since']) - timedelta(days=1)).isoformat()
-    return f"{base_query()} lang:{config.BAHASA} since:{since} until:{job['until']}"
+    start, end = window_bounds(job)
+    return (f'{base_query()} lang:{config.BAHASA} '
+            f'since_time:{int(start.timestamp())} until_time:{int(end.timestamp())}')
+
+
+def window_bounds(job):
+    return tuple(datetime.fromisoformat(job[key]).replace(tzinfo=WIB) for key in ('since','until'))
+
+
+def exclusion_reason(tweet, job):
+    start, end = window_bounds(job)
+    if tweet.date.tzinfo is None:
+        raise ValueError('Timestamp has no timezone')
+    if not start <= tweet.date < end or not study_phase(tweet.date):
+        return 'outside_window'
+    if tweet.retweetedTweet is not None:
+        return 'retweet'
+    if not tweet.rawContent.strip():
+        return 'empty_text'
+    return None
 
 
 def study_phase(dt):
@@ -94,12 +115,7 @@ def study_phase(dt):
 
 
 def normalize(tweet, job, collected_at=None):
-    if tweet.date.tzinfo is None:
-        raise ValueError('Timestamp has no timezone')
-    day = tweet.date.astimezone(WIB).date().isoformat()
-    if not job['since'] <= day < job['until'] or not study_phase(tweet.date):
-        return None
-    if tweet.retweetedTweet is not None or not tweet.rawContent.strip():
+    if exclusion_reason(tweet, job):
         return None
     username = getattr(tweet.user, 'username', '') or ''
     return dict(tweet_id=str(tweet.id), username=username, url=tweet.url,
@@ -110,7 +126,8 @@ def normalize(tweet, job, collected_at=None):
                 author_missing=not username, fase=study_phase(tweet.date), kueri=base_query(),
                 language_filter=config.BAHASA, since=job['since'], until=job['until'],
                 scraped_at=collected_at or datetime.now(WIB).isoformat(),
-                text_truncated=None, collector='twscrape_0.20.1')
+                text_truncated=None, collector='twscrape_0.20.1', adapter_version=3,
+                query_window='unix_seconds_WIB')
 
 
 def load_records(root):
@@ -157,8 +174,9 @@ async def setup_session():
 def settings(args):
     result = dict(query=base_query(), language=config.BAHASA, phases=config.JENDELA_WAKTU,
                 mode=args.mode, per_phase=args.per_phase, per_day=args.per_day,
-                max_raw=args.max_raw, sdk=version('twscrape'), adapter_version=2,
-                query_window='previous_date_through_until_then_filter_WIB')
+                max_raw=args.max_raw, sdk=version('twscrape'), adapter_version=3,
+                query_window='unix_seconds_WIB', max_pages=args.max_pages,
+                quota_basis='unique_eligible_in_window_including_existing')
     if args.mode == 'full':
         result['schedule'] = 'untried_then_spread_days_v1'
     return result
@@ -173,8 +191,7 @@ async def collect(args):
         raise ValueError('Diperlukan tepat satu sesi aktif. Jalankan setup untuk memperbaruinya.')
     RAW.mkdir(parents=True, exist_ok=True)
     cfg = settings(args)
-    fingerprint = hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:16]
-    checkpoint = RAW / ('twscrape_state_' + fingerprint + '.json')
+    checkpoint = checkpoint_for(args)
     state = json.loads(checkpoint.read_text(encoding='utf-8')) if checkpoint.exists() else dict(settings=cfg, jobs={})
     state['status'] = 'running'
     state['process_id'] = os.getpid()
@@ -187,6 +204,8 @@ async def collect(args):
               for p in config.JENDELA_WAKTU}
     attempted = 0
     for job in collection_jobs(args, records):
+        if args.dates and job['since'] not in args.dates.split(','):
+            continue
         key = job['fase'] + '|' + job['since']
         if state['jobs'].get(key, {}).get('processed_once'):
             continue
@@ -203,37 +222,54 @@ async def collect(args):
         attempted += 1
         print(f"{job['fase']} | {job['since']} | total unik tersimpan {len(known)}", flush=True)
         log = dict(job, kueri=base_query(), language_filter=config.BAHASA,
+                   adapter_version=3, query_window='unix_seconds_WIB',
                    search_query=search_query(job), started_at=datetime.now(WIB).isoformat(),
                    collector='twscrape_0.20.1', pages=0, seen=0, added=0, outside_or_excluded=0,
+                   eligible_unique=0, duplicates_existing=0, excluded_outside_window=0,
+                   excluded_retweet=0, excluded_empty_text=0,
                    status='started', processed_once=False)
         warnings.clear()
         capped = False
+        cap_status = None
+        eligible = set()
         try:
             from twscrape.models import parse_tweets
-            stream = api.search_raw(search_query(job), limit=args.per_day, kv={'product':'Latest'})
+            # Raw pages include contextual/quoted tweets. Count only eligible IDs
+            # toward the day quota; use an independent page budget for safety.
+            stream = api.search_raw(search_query(job), limit=-1, kv={'product':'Latest'})
             async with asyncio.timeout(args.query_timeout), aclosing(stream) as responses:
                 async for response in responses:
                     log['pages'] += 1
                     for tweet in parse_tweets(response.json()):
                         log['seen'] += 1
-                        row = normalize(tweet, job)
-                        if row is None:
+                        reason = exclusion_reason(tweet, job)
+                        if reason:
                             log['outside_or_excluded'] += 1
+                            log['excluded_' + reason] += 1
                             continue
+                        row = normalize(tweet, job)
+                        eligible.add(row['tweet_id'])
+                        log['eligible_unique'] = len(eligible)
                         if row['tweet_id'] in known:
-                            continue
+                            log['duplicates_existing'] += 1
+                        else:
+                            with (RAW / ('x_' + row['fase'] + '.jsonl')).open('a', encoding='utf-8') as out:
+                                out.write(json.dumps(row, ensure_ascii=False)+'\n')
+                                out.flush()
+                            known.add(row['tweet_id']); counts[row['fase']] += 1; log['added'] += 1
                         if len(known) >= args.max_raw or (args.mode == 'pilot' and counts[job['fase']] >= args.per_phase):
-                            capped = True
+                            capped, cap_status = True, 'quota_partial'
                             break
-                        with (RAW / ('x_' + row['fase'] + '.jsonl')).open('a', encoding='utf-8') as out:
-                            out.write(json.dumps(row, ensure_ascii=False)+'\n')
-                            out.flush()
-                        known.add(row['tweet_id']); counts[row['fase']] += 1; log['added'] += 1
+                        if len(eligible) >= args.per_day:
+                            capped, cap_status = True, 'eligible_day_limit_partial'
+                            break
                     if capped:
                         break
+                    if log['pages'] >= args.max_pages:
+                        capped, cap_status = True, 'page_budget_partial'
+                        break
                     await asyncio.sleep(args.page_delay)
-            log['status'] = ('sdk_warning_partial' if warnings else 'quota_partial' if capped else
-                             'daily_limit_partial' if log['seen'] >= args.per_day else
+            log['status'] = ('sdk_warning_partial' if warnings else cap_status if capped else
                              'stream_ended_unverified' if log['pages'] else 'no_rows_unverified')
             log['processed_once'] = not warnings
         except asyncio.CancelledError:
@@ -258,13 +294,13 @@ async def collect(args):
             write_json(checkpoint, state)
             with (RAW / 'browser_collection_log.jsonl').open('a', encoding='utf-8') as out:
                 out.write(json.dumps(log, ensure_ascii=False)+'\n')
-            print(f"  +{log['added']} post | {log['status']}", flush=True)
+            print(f"  +{log['added']} post | layak {log['eligible_unique']} | halaman {log['pages']} | {log['status']}", flush=True)
         if not log['processed_once']:
             state['status'] = 'stopped_for_review'
             write_json(checkpoint, state)
             return 2
     else:
-        state['status'] = 'job_pass_finished_not_a_census'
+        state['status'] = 'selected_dates_pass_finished' if args.dates else 'job_pass_finished_not_a_census'
     state['total_unique'] = len(known)
     state['sdk_counts_per_phase'] = counts
     write_json(checkpoint, state)
@@ -272,12 +308,19 @@ async def collect(args):
     return 0
 
 
+def checkpoint_for(args):
+    fingerprint = hashlib.sha256(json.dumps(settings(args), sort_keys=True).encode()).hexdigest()[:16]
+    return RAW / ('twscrape_state_' + fingerprint + '.json')
+
+
 def parser():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('command', choices=['plan','setup','collect'])
     p.add_argument('--mode', choices=['pilot','full'], default='pilot')
     p.add_argument('--per-phase', type=int, default=50)
-    p.add_argument('--per-day', type=int, default=60)
+    p.add_argument('--per-day', type=int, default=300, help='Batas ID unik layak dalam hari WIB, termasuk ID yang sudah tersimpan')
+    p.add_argument('--max-pages', type=int, default=30, help='Batas halaman per tanggal; tercapai berarti parsial')
+    p.add_argument('--dates', help='Opsional: tanggal WIB dipisahkan koma untuk pemeriksaan terbatas')
     p.add_argument('--max-raw', type=int, default=10000)
     p.add_argument('--max-jobs', type=int, default=117)
     p.add_argument('--page-delay', type=float, default=5)
@@ -288,10 +331,14 @@ def parser():
 
 def main():
     args = parser().parse_args()
-    if min(args.per_phase,args.per_day,args.max_raw,args.max_jobs) < 1 or args.page_delay < 5 or args.query_delay < 25 or args.query_timeout < 1:
+    if min(args.per_phase,args.per_day,args.max_raw,args.max_jobs,args.max_pages) < 1 or args.page_delay < 5 or args.query_delay < 25 or args.query_timeout < 1:
         raise ValueError('Batas tidak valid; jeda minimum halaman 5 detik dan kueri 25 detik.')
+    if args.dates and not set(args.dates.split(',')) <= {job['since'] for job in make_jobs()}:
+        raise ValueError('Tanggal --dates harus berada dalam jendela penelitian dan berformat YYYY-MM-DD.')
     if args.command == 'plan':
         jobs = collection_jobs(args, load_records(RAW))
+        if args.dates:
+            jobs = [job for job in jobs if job['since'] in args.dates.split(',')]
         print(json.dumps(dict(settings=settings(args), daily_jobs=len(jobs), first_jobs=jobs[:3],
                               pilot_target=args.per_phase*len(config.JENDELA_WAKTU)), indent=2))
         return 0
