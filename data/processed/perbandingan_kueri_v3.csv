@@ -1,0 +1,4 @@
+﻿tanggal,before_seen,before_added,before_excluded,after_seen,after_eligible_unique,after_added,after_existing,after_outside_window,after_status
+2026-08-01,64,7,57,52,49,42,7,3,stream_ended_unverified
+2026-09-02,66,2,64,49,47,45,2,2,stream_ended_unverified
+2026-10-17,74,0,74,4,4,4,0,0,stream_ended_unverified

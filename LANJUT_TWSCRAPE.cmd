@@ -4,7 +4,7 @@ cd /d "%~dp0"
 set TWS_TELEMETRY=0
 echo Pengambilan penuh: utamakan tanggal yang belum dicoba, bergiliran antar fase.
 echo Klik launcher ini lagi untuk resume. Jangan jalankan dua kolektor bersamaan.
-".venv\Scripts\python.exe" twscrape_pipeline.py collect --mode full --per-day 60 --max-raw 10000
+".venv\Scripts\python.exe" twscrape_pipeline.py collect --mode full --per-day 300 --max-raw 10000
 set "COLLECTION_EXIT=%ERRORLEVEL%"
 echo Memperbarui hasil lokal, termasuk bila pengambilan berhenti sebagian.
 ".venv\Scripts\python.exe" 03_preprocess.py
