@@ -39,6 +39,12 @@ POLA_RELEVAN = (
     r"magang\s+kemenaker|pemagangan\s+nasional"
 )
 KUERI_JANGKAR_KONTEKS = ["maganghub", "magang hub", "magang kemnaker"]
+# Platform yang jalur konteksnya TIDAK dipakai: post tanpa nama program di teks langsung
+# di-exclude (alasan relevansi_konteks_tidak_dipakai), bukan pending. Keputusan tim 26 Okt 2026:
+# pencarian Threads terlalu longgar (2.615 dari 6.028 post tanpa nama program, separuh sampel
+# berupa magang umum), sehingga korpus Threads dibatasi pada post yang menyebut program.
+# Keputusan reviewer manusia tetap menang bila ada.
+RELEVANSI_KONTEKS_DIABAIKAN = ["threads"]
 POLA_KONTEKS = (
     r"batch\s*\d|uang\s*saku|mentor|absen|presensi|pencairan|\bcair\b|"
     r"pemagang|peserta\s+magang|kemnaker|kemenaker|laporan\s+harian|logbook"

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review MagangHub</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a66; --line: #dedcd6;
+    --accent: #2f5bd3; --accent-ink: #ffffff; --chip: #eeece6; --warn: #b4441f; --ok: #2d7a46;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --panel: #201f1d; --ink: #ecebe7; --muted: #a3a19b; --line: #383733;
+      --accent: #7c9cf2; --accent-ink: #10131c; --chip: #2c2b28; --warn: #f08a65; --ok: #77c590;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--panel);
+           border-bottom: 1px solid var(--line); padding: 10px 16px;
+           display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; }
+  label.inline { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
+  input[type=text] { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
+                     background: var(--bg); color: var(--ink); }
+  button { font: inherit; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px;
+           background: var(--chip); color: var(--ink); cursor: pointer; }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .empty { color: var(--muted); padding: 48px 0; text-align: center; }
+  .progress { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+              color: var(--muted); font-size: 13px; margin-bottom: 8px; flex-wrap: wrap; }
+  .bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+  .bar > div { height: 100%; background: var(--accent); width: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip { background: var(--chip); border-radius: 999px; padding: 1px 9px; font-size: 12px; color: var(--muted); }
+  .chip.warn { color: var(--warn); }
+  .teks { font-size: 17px; white-space: pre-wrap; overflow-wrap: anywhere; margin: 4px 0 12px; }
+  .hint { font-size: 12px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 8px; margin-bottom: 4px; }
+  .field { display: grid; grid-template-columns: 150px 1fr; gap: 8px; align-items: center;
+           padding: 7px 0; border-top: 1px solid var(--line); }
+  .field .nama { font-size: 13px; color: var(--muted); }
+  .field .nama b { color: var(--ink); font-weight: 600; }
+  .opsi { display: flex; flex-wrap: wrap; gap: 6px; }
+  .opsi button { font-size: 13px; padding: 3px 9px; }
+  .opsi button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .opsi button kbd { font: 11px ui-monospace, monospace; opacity: .7; margin-left: 4px; }
+  .field input[type=text] { width: 100%; }
+  .nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .tips { color: var(--muted); font-size: 12px; margin-top: 14px; }
+  .pesan { font-size: 13px; }
+  .pesan.err { color: var(--warn); } .pesan.ok { color: var(--ok); }
+  @media (max-width: 600px) { .field { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Review MagangHub</h1>
+  <label class="inline">Reviewer <input id="reviewer" type="text" placeholder="inisial / nama" size="10"></label>
+  <label class="inline"><input id="file" type="file" accept=".csv"></label>
+  <label class="inline"><input id="fKalibrasi" type="checkbox"> hanya kalibrasi</label>
+  <label class="inline"><input id="fBelum" type="checkbox"> hanya yang belum</label>
+  <label class="inline"><input id="fPetunjuk" type="checkbox"> tampilkan petunjuk otomatis</label>
+  <button id="ekspor" class="primary">Ekspor CSV</button>
+  <span id="pesan" class="pesan"></span>
+</header>
+<main id="isi"><div class="empty">Isi nama reviewer, lalu buka <code>antrean_review_*.csv</code> atau <code>sampel_review_*.csv</code>.</div></main>
+
+<script>
+// Nilai harus sama dengan tk2prep/review.py (FIELD_KEPUTUSAN).
+const FIELDS = [
+  { k: 'keputusan_relevansi', nama: 'Relevansi', wajib: true, opsi: [['relevan','1'], ['tidak_relevan','2'], ['ragu','3']] },
+  { k: 'keputusan_promosi', nama: 'Promosi', wajib: true, opsi: [['bukan_iklan','4'], ['iklan','5'], ['ragu','6']] },
+  { k: 'privasi_ok', nama: 'Privasi aman', opsi: [['ya','7'], ['tidak','8']] },
+  { k: 'jenis_akun_manual', nama: 'Jenis akun', opsi: [['publik'], ['resmi'], ['media'], ['organisasi_lain'], ['ragu']] },
+  { k: 'sentimen_manual', nama: 'Sentimen', opsi: [['positif'], ['negatif'], ['netral'], ['campuran'], ['ragu']] },
+  { k: 'stance_manual', nama: 'Stance', opsi: [['mendukung'], ['menolak'], ['netral_tidak_jelas'], ['tidak_berlaku']] },
+];
+const TEKS_BEBAS = [['aspek_manual', 'Aspek', 'mis. uang_saku;pencairan'], ['catatan', 'Catatan', 'alasan singkat, terutama untuk ragu']];
+const SEMUA_KOLOM = [...FIELDS.map(f => f.k), ...TEKS_BEBAS.map(t => t[0])];
+const TERLARANG = new Set(['auto', 'otomatis', 'agent', 'claude', 'model', 'rule']);
+
+let header = [], rows = [], namaFile = '', label = {}, posisi = 0;
+const $ = id => document.getElementById(id);
+
+function parseCSV(teks) {
+  if (teks.charCodeAt(0) === 0xFEFF) teks = teks.slice(1);
+  const out = []; let row = [], sel = '', kutip = false;
+  for (let i = 0; i < teks.length; i++) {
+    const c = teks[i];
+    if (kutip) {
+      if (c === '"') { if (teks[i + 1] === '"') { sel += '"'; i++; } else kutip = false; }
+      else sel += c;
+    } else if (c === '"') kutip = true;
+    else if (c === ',') { row.push(sel); sel = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && teks[i + 1] === '\n') i++;
+      row.push(sel); out.push(row); row = []; sel = '';
+    } else sel += c;
+  }
+  if (sel !== '' || row.length) { row.push(sel); out.push(row); }
+  return out.filter(r => r.length > 1 || r[0] !== '');
+}
+const kutipCSV = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+const kunci = () => 'review-mh:' + namaFile + ':' + ($('reviewer').value.trim().toLowerCase() || '-');
+
+function simpan() { try { localStorage.setItem(kunci(), JSON.stringify(label)); } catch (e) {} }
+function muat() {
+  try { label = JSON.parse(localStorage.getItem(kunci()) || '{}'); } catch (e) { label = {}; }
+}
+function pesan(t, jenis) { const p = $('pesan'); p.textContent = t; p.className = 'pesan ' + (jenis || ''); }
+
+function sudah(r) { const l = label[r.post_id]; return !!(l && FIELDS.filter(f => f.wajib).every(f => l[f.k])); }
+function terlihat() {
+  return rows.filter(r => (!$('fKalibrasi').checked || r.kalibrasi_dua_peninjau === '1')
+                       && (!$('fBelum').checked || !sudah(r) || r === rows[posisi]));
+}
+
+function render() {
+  const isi = $('isi');
+  if (!rows.length) return;
+  const daftar = terlihat();
+  if (!daftar.length) { isi.innerHTML = '<div class="empty">Tidak ada baris untuk filter ini.</div>'; return; }
+  let idx = daftar.indexOf(rows[posisi]);
+  if (idx < 0) { posisi = rows.indexOf(daftar[0]); idx = 0; }
+  const r = rows[posisi], l = label[r.post_id] || {};
+  const selesai = rows.filter(sudah).length;
+  isi.innerHTML = '';
+
+  const prog = document.createElement('div'); prog.className = 'progress';
+  prog.innerHTML = `<span></span><span></span>`;
+  prog.children[0].textContent = `${namaFile} · baris ${idx + 1} dari ${daftar.length}`;
+  prog.children[1].textContent = `${selesai}/${rows.length} selesai (relevansi + promosi terisi)`;
+  const bar = document.createElement('div'); bar.className = 'bar';
+  bar.innerHTML = '<div></div>'; bar.firstChild.style.width = (100 * selesai / rows.length) + '%';
+  isi.append(prog, bar);
+
+  const card = document.createElement('div'); card.className = 'card';
+  const meta = document.createElement('div'); meta.className = 'meta';
+  const chip = (t, warn) => { const s = document.createElement('span'); s.className = 'chip' + (warn ? ' warn' : ''); s.textContent = t; meta.append(s); };
+  chip(r.platform); chip(r.fase); chip(r.tanggal_wib); chip(r.content_type);
+  if (+r.teks_berulang_n > 1) chip(`teks sama ×${r.teks_berulang_n}`);
+  if (r.pii_flags) chip('PII: ' + r.pii_flags, true);
+  if (r.kalibrasi_dua_peninjau === '1') chip('kalibrasi: isi sendiri, jangan lihat label teman', true);
+  card.append(meta);
+
+  const teks = document.createElement('div'); teks.className = 'teks'; teks.textContent = r.text_minimal;
+  card.append(teks);
+  if ($('fPetunjuk').checked) {
+    const h = document.createElement('div'); h.className = 'hint';
+    h.textContent = `otomatis: ${r.status_final} · ${r.alasan_utama}` +
+      (r.relevansi_bukti ? ` · bukti: ${r.relevansi_bukti}` : '') +
+      (r.promosi_sinyal ? ` · sinyal promosi: ${r.promosi_sinyal}` : '') +
+      ` · akun: ${r.jenis_akun_otomatis}`;
+    card.append(h);
+  }
+
+  for (const f of FIELDS) {
+    const row = document.createElement('div'); row.className = 'field';
+    const nama = document.createElement('div'); nama.className = 'nama';
+    nama.innerHTML = f.wajib ? `<b>${f.nama}</b> *` : f.nama;
+    const opsi = document.createElement('div'); opsi.className = 'opsi';
+    for (const [nilai, tombol] of f.opsi) {
+      const b = document.createElement('button');
+      b.textContent = nilai; if (tombol) { const k = document.createElement('kbd'); k.textContent = tombol; b.append(k); }
+      if (l[f.k] === nilai) b.className = 'on';
+      b.onclick = () => setNilai(r, f.k, nilai, true);
+      opsi.append(b);
+    }
+    row.append(nama, opsi); card.append(row);
+  }
+  for (const [k, nama, ph] of TEKS_BEBAS) {
+    const row = document.createElement('div'); row.className = 'field';
+    const n = document.createElement('div'); n.className = 'nama'; n.textContent = nama;
+    const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = ph; inp.value = l[k] || '';
+    inp.oninput = () => { (label[r.post_id] ||= {})[k] = inp.value; simpan(); };
+    row.append(n, inp); card.append(row);
+  }
+  isi.append(card);
+
+  const nav = document.createElement('div'); nav.className = 'nav';
+  const prev = document.createElement('button'); prev.textContent = '← Sebelumnya'; prev.onclick = () => geser(-1);
+  const next = document.createElement('button'); next.textContent = 'Berikutnya →'; next.onclick = () => geser(1);
+  nav.append(prev, next); isi.append(nav);
+  const tips = document.createElement('div'); tips.className = 'tips';
+  tips.textContent = 'Tombol: 1–3 relevansi · 4–6 promosi · 7/8 privasi · ←/→ pindah baris · Enter berikutnya. ' +
+                     'Klik pilihan yang aktif untuk mengosongkan. Progres tersimpan otomatis di browser ini; tetap ekspor CSV secara berkala.';
+  isi.append(tips);
+}
+
+function setNilai(r, k, nilai, toggle) {
+  const l = (label[r.post_id] ||= {});
+  l[k] = toggle && l[k] === nilai ? '' : nilai;
+  simpan(); render();
+}
+function geser(d) {
+  const daftar = terlihat(); const i = daftar.indexOf(rows[posisi]);
+  const j = Math.max(0, Math.min(daftar.length - 1, i + d));
+  posisi = rows.indexOf(daftar[j]); render(); window.scrollTo(0, 0);
+}
+
+document.addEventListener('keydown', e => {
+  if (!rows.length || e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); return geser(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); return geser(-1); }
+  for (const f of FIELDS) for (const [nilai, tombol] of f.opsi)
+    if (tombol && e.key === tombol) { e.preventDefault(); return setNilai(rows[posisi], f.k, nilai, false); }
+});
+
+$('file').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const data = parseCSV(await f.text());
+  header = data[0];
+  for (const k of ['platform', 'post_id', 'text_minimal', 'reviewer', ...SEMUA_KOLOM])
+    if (!header.includes(k)) { pesan(`Kolom ${k} tidak ada. Pakai berkas antrean_review_* atau sampel_review_*.`, 'err'); return; }
+  rows = data.slice(1).map(v => Object.fromEntries(header.map((h, i) => [h, v[i] ?? ''])));
+  namaFile = f.name.replace(/\.csv$/i, ''); posisi = 0; muat();
+  // Keputusan yang sudah ada di berkas (mis. hasil ekspor sebelumnya) ikut dimuat bila belum ada di browser.
+  for (const r of rows) for (const k of SEMUA_KOLOM)
+    if (r[k] && !(label[r.post_id] && label[r.post_id][k])) (label[r.post_id] ||= {})[k] = r[k];
+  $('fPetunjuk').checked = !/^sampel/i.test(namaFile);
+  pesan(`${rows.length} baris dimuat.`, 'ok'); render();
+  document.activeElement.blur();  // supaya tombol 1–8 tidak masuk ke kolom reviewer
+};
+for (const id of ['fKalibrasi', 'fBelum', 'fPetunjuk']) $(id).onchange = render;
+$('reviewer').onchange = () => { if (rows.length) { muat(); render(); } };
+
+$('ekspor').onclick = () => {
+  const rev = $('reviewer').value.trim();
+  if (!rows.length) return pesan('Belum ada berkas.', 'err');
+  if (!rev) return pesan('Isi nama reviewer dulu.', 'err');
+  if (TERLARANG.has(rev.toLowerCase())) return pesan('Nama reviewer harus manusia, bukan auto/agent/model.', 'err');
+  let n = 0;
+  const baris = rows.map(r => {
+    const l = label[r.post_id] || {}; const isi = SEMUA_KOLOM.some(k => l[k]);
+    if (isi) n++;
+    return header.map(h => SEMUA_KOLOM.includes(h) ? (l[h] || '') : h === 'reviewer' ? (isi ? rev : '') : r[h]);
+  });
+  const csv = '﻿' + [header, ...baris].map(b => b.map(kutipCSV).join(',')).join('\n') + '\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `${namaFile}__${rev.replace(/[^\w-]+/g, '_')}.csv`; a.click();
+  pesan(`Diekspor: ${n} baris berisi keputusan.`, 'ok');
+};
+</script>
+</body>
+</html>

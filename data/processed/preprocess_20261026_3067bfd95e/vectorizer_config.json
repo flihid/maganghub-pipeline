@@ -1,0 +1,20 @@
+{
+  "tujuan": "CountVectorizer untuk representasi topik BERTopic SETELAH embedding/clustering",
+  "input_kolom": "text_topic_repr (atau text_embedding + parameter di bawah)",
+  "ngram_range": [
+    1,
+    2
+  ],
+  "min_df": 2,
+  "max_df": 0.95,
+  "lowercase": true,
+  "token_pattern": "(?u)\\b[a-z][a-z]+\\b",
+  "stop_words_file": "stopword_topik.txt",
+  "stop_words_domain_opsional": [
+    "maganghub",
+    "magang",
+    "hub"
+  ],
+  "catatan": "Kata domain/negasi tidak dibuang secara default. Uji coba membuang istilah kueri (stop_words_domain_opsional) perlu dibandingkan lewat koherensi/keterbacaan topik; jangan dianggap otomatis lebih baik. Sumber: BERTopic tips 'Removing stop words' & halaman Vectorizers.",
+  "embedding_input": "text_embedding (konteks utuh, stopword tidak dibuang)"
+}

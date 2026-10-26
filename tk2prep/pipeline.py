@@ -109,8 +109,11 @@ def perkaya(rec: dict, salt: str) -> dict:
     r["pii_flags"] = teks.audit_pii(r["text"])
     jalur, bukti = relevansi.nilai_relevansi(r["text"], r.get("kueri_semua") or [])
     r["relevansi_jalur"], r["relevansi_bukti"] = jalur, bukti
-    r["relevansi_otomatis"] = ("relevan" if jalur.startswith("eksplisit") else
-                               "pending" if jalur.startswith("konteks") else "tidak_relevan")
+    if jalur.startswith("konteks") and r["platform"] in config.RELEVANSI_KONTEKS_DIABAIKAN:
+        r["relevansi_otomatis"] = "konteks_tidak_dipakai"
+    else:
+        r["relevansi_otomatis"] = ("relevan" if jalur.startswith("eksplisit") else
+                                   "pending" if jalur.startswith("konteks") else "tidak_relevan")
     p = promosi.klasifikasi_promosi(r["text"], config.MAKS_HASHTAG)
     r["promosi_keputusan_otomatis"], r["promosi_alasan"], r["promosi_sinyal"] = (
         p["keputusan"], p["alasan"], p["sinyal"])
@@ -162,6 +165,8 @@ def putuskan(r: dict, manusia: dict | None) -> None:
         sumber.add("otomatis")
         if r["relevansi_otomatis"] == "tidak_relevan":
             exclude.append("relevansi_otomatis_tanpa_bukti_teks")
+        elif r["relevansi_otomatis"] == "konteks_tidak_dipakai":
+            exclude.append("relevansi_konteks_tidak_dipakai")
         elif r["relevansi_otomatis"] == "pending":
             pending.append("relevansi_" + r["relevansi_jalur"])
 
@@ -308,6 +313,7 @@ def proses(root: Path, snapshot_folder: Path, out_root: Path, annotations: Path)
         jendela_waktu=config.JENDELA_WAKTU, interval="[awal 00:00 WIB, akhir 00:00 WIB)",
         pola_relevan_khas=relevansi.POLA_PROGRAM_KHAS.pattern, pola_relevan_generik=relevansi.POLA_PROGRAM_GENERIK.pattern,
         pola_konteks=config.POLA_KONTEKS, kueri_jangkar_tunggal=config.KUERI_JANGKAR_KONTEKS,
+        relevansi_konteks_diabaikan=config.RELEVANSI_KONTEKS_DIABAIKAN,
         akun_resmi=config.AKUN_RESMI, akun_media=config.AKUN_MEDIA, akun_dibuang=config.AKUN_DIBUANG,
         maks_hashtag=config.MAKS_HASHTAG, slang_v1=teks.SLANG_V1,
         leksikon_colloquial=dict(file=config.FILE_LEKSIKON, dipakai=False,

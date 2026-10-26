@@ -253,6 +253,28 @@ class TestPipeline(unittest.TestCase):
         jl = [json.loads(x) for x in (out / "model_ready_x.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertIn("2094406422507446499", {r["post_id"] for r in jl})
 
+    def test_konteks_threads_exclude_x_tetap_pending(self):
+        tulis_jsonl(self.env.raw / "threads_magang-kemnaker.jsonl", [
+            rec("th_1", "uang saku batch 2 belum cair", platform="threads", kueri="magang kemnaker"),
+            rec("th_2", "uang saku MagangHub belum cair", platform="threads", kueri="magang kemnaker"),
+        ])
+        _, hasil, df = self.env.jalankan()
+        self.assertEqual(df.loc["2094406422507446502", "status_final"], "pending")  # X: konteks tetap direview
+        th = pd.read_csv(hasil["out"] / "threads/dataset_threads_semua_keputusan.csv", dtype={"post_id": str},
+                         keep_default_na=False).set_index("post_id")
+        self.assertEqual(th.loc["th_1", "status_final"], "exclude")
+        self.assertEqual(th.loc["th_1", "alasan_utama"], "relevansi_konteks_tidak_dipakai")
+        self.assertEqual(th.loc["th_2", "status_final"], "keep")
+        # Keputusan manusia tetap menang atas aturan platform.
+        isi = self.env.root / "isi_th.csv"
+        pd.DataFrame([dict(platform="threads", post_id="th_1", reviewer="A", keputusan_relevansi="relevan")]
+                     ).to_csv(isi, index=False)
+        review.impor(isi, self.env.ann)
+        _, hasil, _ = self.env.jalankan()
+        th = pd.read_csv(hasil["out"] / "threads/dataset_threads_semua_keputusan.csv", dtype={"post_id": str},
+                         keep_default_na=False).set_index("post_id")
+        self.assertEqual(th.loc["th_1", "status_final"], "keep")
+
     def test_snapshot_mengabaikan_potongan_akhir_dan_idempoten(self):
         f = self.env.raw / "x_fase1_pengumuman.jsonl"
         lengkap = f.read_bytes()

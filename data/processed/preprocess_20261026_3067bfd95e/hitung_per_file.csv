@@ -1,0 +1,9 @@
+﻿platform,file,records,valid,karantina
+x,x_fase1_pengumuman.jsonl,2473,2473,0
+x,x_fase2_seleksi.jsonl,936,936,0
+x,x_fase3_penempatan.jsonl,1848,1848,0
+threads,threads_magang-hub.jsonl,899,899,0
+threads,threads_magang-kemnaker.jsonl,2684,2684,0
+threads,threads_magang-nasional.jsonl,262,262,0
+threads,threads_maganghub.jsonl,1416,1416,0
+threads,threads_pemagangan-nasional.jsonl,767,767,0

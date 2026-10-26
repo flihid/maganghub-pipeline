@@ -63,6 +63,47 @@ class PromotionTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertNotEqual(klasifikasi_promosi(text)['keputusan'], 'exclude')
 
+    def test_pengumuman_lowongan_mitra(self):
+        iklan = [
+            'Lowongan Magang Puskesmas Kesunean\n\nPuskesmas Kesunean membuka kesempatan untuk bergabung magang '
+            'menjadi Analis Laboratorium\n\nKirim lamaran melalui maganghub.kemnaker.go.id\n\nDeadline : 27okt - 1nov 2026',
+            'PT PAL Indonesia kembali membuka kesempatan magang melalui Magang Hub Kemnaker untuk penempatan di Divisi HCM.',
+            '📢 OPEN RECRUITMENT MAGANG KEMNAKER RSIA Restu Ibu. Posisi: Perawat, Bidan. Daftar melalui link di bawah',
+            'Calling all fresh grad! WOM Finance lagi buka posisi Marketing Intern. 📍 Penempatan Sunter. Apply via link',
+        ]
+        for text in iklan:
+            with self.subTest(text=text):
+                self.assertEqual(klasifikasi_promosi(text)['alasan'], 'pengumuman_lowongan_mitra')
+        opini = [
+            'ngecek lowongan maganghub berasa war krs',
+            'ada perusahaan yang buka lowongan staff exim di MagangHub, aku apply di sana. nggak ada kabar apa-apa',
+            'banyak perusahaan cuma mengandalkan maganghub, jd ga open recruitment untuk posisi full time lg',
+            'perusahaan besar jarng buka lowongan, ikut magang hub buka 10+ posisi',
+            'ada ga rekomendasi perusahaan yg green flag dan buka lowongan maganghub untuk posisi HR',
+            'lowongan maganghub jadi kosong lagi😃',
+            'kalo loker di indo manusiawi dan gampang keterima jg gw gamau ikut maganghub',
+        ]
+        for text in opini:
+            with self.subTest(text=text):
+                self.assertNotEqual(klasifikasi_promosi(text)['alasan'], 'pengumuman_lowongan_mitra')
+
+    def test_iklan_titipan_order_dan_acara(self):
+        cases = {
+            'Coba chat kak @hrkonsul kalo butuh bantuan buat bikin/review CV, cover letter, atau LinkedIn. '
+            'HR 6 tahun pengalaman, udah banyak yang tembus ke BUMN': 'layanan_dengan_kontak_dan_bukti_jual',
+            'jam 09.00 nanti open form order untuk yang mau order layanan jasa review CV maganghub':
+                'penawaran_eksplisit_jasa_atau_joki',
+            'Persiapkan dirimu! 🚀 Ikuti Webinar Bedah Seleksi MagangHub dan pelajari strategi lolos':
+                'promosi_acara_pelatihan',
+        }
+        for text, alasan in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(klasifikasi_promosi(text)['alasan'], alasan)
+        for text in ['info bootcamp/course office sama design grafis dong, buat nambah-nambah maganghub',
+                     'aku ikut pelatihan kemnaker kemarin, seru juga sebelum maganghub']:
+            with self.subTest(text=text):
+                self.assertNotEqual(klasifikasi_promosi(text)['keputusan'], 'exclude')
+
     def test_unexplained_solicitation_needs_review(self):
         self.assertEqual(klasifikasi_promosi('Hai ka khusus maganghub di aku bisa. Check bio ya')['keputusan'], 'review')
 
