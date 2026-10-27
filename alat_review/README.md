@@ -21,10 +21,26 @@ Alat bantu untuk mengisi `antrean_review_*.csv` dan `sampel_review_*.csv` dari
 
 Data tidak dikirim ke mana pun; berkas hanya dibaca oleh browser di komputer sendiri.
 
+## Presisi aturan
+
+Dari berkas `sampel_review_*` yang sudah diisi (bukan `antrean_review_*`, karena antrean tidak
+berstrata):
+
+```
+python alat_review/presisi_aturan.py data/processed/preprocess_<id>/<sampel_terisi>.csv
+```
+
+Keluarannya memakai bobot strata, sehingga berlaku untuk populasi status, bukan untuk sampel
+saja. Baris `ragu` tidak dihitung sebagai benar maupun salah; jumlahnya dilaporkan terpisah
+beserta batas bawah pesimistis bila seluruhnya dianggap keputusan aturan yang salah.
+Tanpa argumen, skrip menjalankan pemeriksaan sendiri (`demo OK`).
+
 ## Kalibrasi dua peninjau
 
 Pada berkas `sampel_review_*`, centang **hanya kalibrasi** (40 baris). Dua peninjau mengisi
-secara terpisah dengan nama reviewer masing-masing, tanpa melihat label satu sama lain.
+secara terpisah dengan nama reviewer masing-masing, tanpa melihat label satu sama lain. Berkas
+sampel dibekukan: `preprocess_tk2.py run` tidak mengundinya ulang, sehingga peninjau kedua
+menilai 40 baris yang sama dengan peninjau pertama meski preprocessing sudah dijalankan lagi.
 Petunjuk otomatis disembunyikan secara default pada berkas sampel agar penilaian tidak terarah.
 Setelah kedua hasil diimpor:
 

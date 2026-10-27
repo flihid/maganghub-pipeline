@@ -159,7 +159,7 @@ keputusan bergantung pada konteks tersebut.
 
 
 def tulis_panduan_label(path: Path):
-    path.write_text(PANDUAN, encoding="utf-8")
+    path.write_text(PANDUAN, encoding="utf-8", newline="\n")
 
 
 def _md(df: pd.DataFrame, index=True) -> str:
@@ -176,7 +176,11 @@ def tulis_laporan(out: Path, manifest: dict, cfg: dict, ringkas: dict):
          "Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot ini.", "",
          "## Status validasi",
          f"- Keputusan manusia yang tersedia: **{cfg['n_keputusan_manusia']} post**.",
-         "- Tanpa label manusia, precision/recall aturan dan kesepakatan antarpeninjau **belum dapat dihitung**.",
+         ("- Tanpa label manusia, precision/recall aturan dan kesepakatan antarpeninjau "
+          "**belum dapat dihitung**." if not cfg["n_keputusan_manusia"] else
+          "- Presisi aturan: `python alat_review/presisi_aturan.py <sampel_terisi>.csv` "
+          "(berbobot strata). Kesepakatan antarpeninjau: `python alat_review/kappa_kalibrasi.py`, "
+          "yang menuntut dua peninjau pada baris kalibrasi yang sama."),
          "- `model_ready_*` = lolos aturan otomatis (dan review bila ada). Bukan gold standard.",
          "- Korpus adalah hasil pencarian X/Threads dengan batas kolektor, **bukan sensus** percakapan.", "",
          "## Snapshot",
@@ -217,4 +221,4 @@ def tulis_laporan(out: Path, manifest: dict, cfg: dict, ringkas: dict):
           "bukan tanggal resmi yang sudah diverifikasi. Fase 3 di TK1 'sesudahnya'; di sini dipotong pada batas akhir koleksi.",
           "- Daftar akun resmi/media tidak lengkap; `tidak_terdaftar` perlu ditinjau.",
           "- Relevansi `eksplisit_generik` ('magang nasional') diasumsikan merujuk program ini; perlu dicek di sampel.", ""]
-    (out / "LAPORAN_KUALITAS.md").write_text("\n".join(L), encoding="utf-8")
+    (out / "LAPORAN_KUALITAS.md").write_text("\n".join(L), encoding="utf-8", newline="\n")

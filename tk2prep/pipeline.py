@@ -8,6 +8,7 @@ Keputusan manusia (data/annotations) selalu mengalahkan aturan untuk field yang 
 """
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import random
@@ -322,8 +323,8 @@ def proses(root: Path, snapshot_folder: Path, out_root: Path, annotations: Path)
         annotations_dir=annotations.relative_to(root).as_posix() if annotations.is_relative_to(root) else str(annotations),
         n_keputusan_manusia=len(manusia),
     )
-    (out / "config_preprocess.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
-    (out / "stopword_topik.txt").write_text("\n".join(teks.STOPWORD_TOPIK) + "\n", encoding="utf-8")
+    (out / "config_preprocess.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    (out / "stopword_topik.txt").write_text("\n".join(teks.STOPWORD_TOPIK) + "\n", encoding="utf-8", newline="\n")
     vect = dict(
         tujuan="CountVectorizer untuk representasi topik BERTopic SETELAH embedding/clustering",
         input_kolom="text_topic_repr (atau text_embedding + parameter di bawah)",
@@ -336,7 +337,7 @@ def proses(root: Path, snapshot_folder: Path, out_root: Path, annotations: Path)
                  "halaman Vectorizers."),
         embedding_input="text_embedding (konteks utuh, stopword tidak dibuang)",
     )
-    (out / "vectorizer_config.json").write_text(json.dumps(vect, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "vectorizer_config.json").write_text(json.dumps(vect, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     karantina_all, hitung_all, konflik_all = [], [], []
     for plat in ("x", "threads"):
@@ -364,7 +365,7 @@ def proses(root: Path, snapshot_folder: Path, out_root: Path, annotations: Path)
                                                  "scraped_at", "panjang_teks", "text_truncated",
                                                  "dipilih_sebagai_teks", *muat.METRIK]), out / "konflik_versi_id.csv")
     tulis_csv(laporan.kamus_data(), out / "kamus_data.csv")
-    (out / "snapshot_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "snapshot_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     laporan.tulis_panduan_label(out / "PANDUAN_LABEL.md")
     laporan.tulis_laporan(out, manifest, cfg, ringkas)
     return dict(out=out, ringkas=ringkas)
@@ -400,9 +401,19 @@ def tulis_platform(out: Path, plat: str, recs, valid, karantina, files, snapshot
                               "collector", "text_minimal"]), out / f"exclusion_log_{plat}.csv")
     pend = [r for r in recs if r["status_final"] == "pending"]
     tulis_csv(lembar_review(pend), out / f"antrean_review_{plat}.csv")
-    sampel = sampel_review(recs)
-    tulis_csv(lembar_review(sampel, ["strata", "N_strata", "n_strata", "bobot", "kalibrasi_dua_peninjau"]),
-              out / f"sampel_review_{plat}.csv")
+    # Sampel berstrata DIBEKUKAN sekali per folder output. Strata-nya memakai status_final, yang
+    # bergeser setiap kali keputusan peninjau masuk; menggambar ulang akan membuat label yang
+    # sudah diisi kehilangan populasi acuannya (bobot, N_strata, baris kalibrasi), sehingga
+    # presisi dan kappa tidak lagi dapat dihitung. Hapus berkasnya bila memang ingin diundi ulang.
+    berkas_sampel = out / f"sampel_review_{plat}.csv"
+    if berkas_sampel.exists():
+        with berkas_sampel.open(encoding="utf-8-sig", newline="") as s:
+            n_sampel = sum(1 for _ in csv.DictReader(s))
+    else:
+        sampel = sampel_review(recs)
+        tulis_csv(lembar_review(sampel, ["strata", "N_strata", "n_strata", "bobot",
+                                         "kalibrasi_dua_peninjau"]), berkas_sampel)
+        n_sampel = len(sampel)
 
     tahapan, cocok = tabel_tahapan(n_raw, karantina, valid, recs)
     tulis_csv(tahapan, out / f"tahapan_{plat}.csv")
@@ -423,4 +434,4 @@ def tulis_platform(out: Path, plat: str, recs, valid, karantina, files, snapshot
     return dict(n_raw=n_raw, karantina=len(karantina), valid=len(valid), unik=len(recs),
                 status={s: sum(r["status_final"] == s for r in recs) for s in ("keep", "pending", "exclude")},
                 n_model_ready=len(keep), n_tanpa_resmi_media=len(publik), n_satu_per_teks=len(unik),
-                n_sampel=len(sampel), rekonsiliasi_ok=cocok, tahapan=tahapan, statistik=statistik)
+                n_sampel=n_sampel, rekonsiliasi_ok=cocok, tahapan=tahapan, statistik=statistik)

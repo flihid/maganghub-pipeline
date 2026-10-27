@@ -9,6 +9,7 @@ tidak kosong terakhir per kolom, sama seperti tk2prep.review.keputusan_berlaku.
 """
 import argparse
 import csv
+import json
 import sys
 from itertools import combinations
 from pathlib import Path
@@ -33,7 +34,10 @@ def main():
     ap.add_argument("--snapshot")
     args = ap.parse_args()
     out = ROOT / "data/processed"
-    folder = out / f"preprocess_{args.snapshot}" if args.snapshot else max(out.glob("preprocess_*"))
+    # Nama folder memuat tanggal + hash isi, sehingga urutan abjad bukan urutan waktu.
+    folder = (out / f"preprocess_{args.snapshot}" if args.snapshot else
+              max(out.glob("preprocess_*/snapshot_manifest.json"),
+                  key=lambda f: json.loads(f.read_text(encoding="utf-8"))["created_utc"]).parent)
     log = review.baca_log(ROOT / "data/annotations")
     if not log:
         sys.exit("Belum ada keputusan. Jalankan dulu: python preprocess_tk2.py import-review <file>")

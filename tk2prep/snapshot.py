@@ -134,7 +134,7 @@ def buat_snapshot(root: Path, raw_dir: Path, out_root: Path, platforms=("x", "th
         dependencies=versi_dependensi(),
         note="No environment variables, cookies, or session databases are read or stored.",
     )
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return manifest
 
 
