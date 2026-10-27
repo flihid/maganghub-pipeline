@@ -13,15 +13,15 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SNAPSHOT = ROOT / "data/processed/preprocess_20261026_d11a2b74c6"
+SNAPSHOT = ROOT / "data/processed/preprocess_20261026_3067bfd95e"
 RAW = ROOT / "data/raw"
 
 # Angka yang ditulis di README bagian "Temuan pengumpulan data".
 DIHARAPKAN = {
-    "x": {"unik": 5257, "keep": 4306, "pending": 60, "exclude": 891},
-    "threads": {"unik": 6028, "keep": 3309, "pending": 1109, "exclude": 1610},
+    "x": {"unik": 5257, "keep": 4286, "pending": 52, "exclude": 919},
+    "threads": {"unik": 6028, "keep": 3183, "pending": 20, "exclude": 2825},
 }
-GABUNGAN = {"unik": 11285, "keep": 7615, "pending": 1169, "exclude": 2501}
+GABUNGAN = {"unik": 11285, "keep": 7469, "pending": 72, "exclude": 3744}
 
 
 def baca_tahapan(file):

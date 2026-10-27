@@ -1,0 +1,5 @@
+# Data penelitian harus byte-identik di semua sistem operasi, karena
+# snapshot_manifest.json memverifikasinya dengan sha256. Tanpa baris ini,
+# core.autocrlf di Windows menambah CR pada setiap baris sehingga sha256
+# snapshot yang dibuat di macOS atau Linux tidak akan cocok.
+data/** -text
