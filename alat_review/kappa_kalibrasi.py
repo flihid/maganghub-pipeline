@@ -1,11 +1,16 @@
-"""Hitung kesepakatan dua peninjau (Cohen's kappa) pada baris kalibrasi sampel review.
+"""Hitung kesepakatan (Cohen's kappa) antarpeninjau, atau satu peninjau pada dua kesempatan.
 
     python alat_review/kappa_kalibrasi.py                 # snapshot terbaru, X dan Threads
     python alat_review/kappa_kalibrasi.py --snapshot ID
+    python alat_review/kappa_kalibrasi.py A.csv B.csv     # bandingkan dua berkas ekspor
 
-Membaca data/annotations/review_decisions_log.csv (hasil import-review) dan baris
-`kalibrasi_dua_peninjau=1` dari sampel_review_<platform>.csv. Per peninjau dipakai nilai
-tidak kosong terakhir per kolom, sama seperti tk2prep.review.keputusan_berlaku.
+Tanpa argumen berkas: membaca data/annotations/review_decisions_log.csv (hasil import-review)
+dan baris `kalibrasi_dua_peninjau=1` dari sampel_review_<platform>.csv. Per peninjau dipakai
+nilai tidak kosong terakhir per kolom, sama seperti tk2prep.review.keputusan_berlaku.
+
+Dengan dua berkas: membandingkan baris yang post_id-nya ada di keduanya. Bila nama peninjaunya
+sama, yang terukur adalah konsistensi satu orang pada dua kesempatan (test-retest), BUKAN
+kesepakatan antarpeninjau, dan tidak boleh dilaporkan sebagai penggantinya.
 """
 import argparse
 import csv
@@ -29,10 +34,40 @@ def baca(path):
         return list(csv.DictReader(s))
 
 
+def bandingkan_berkas(a_path: Path, b_path: Path):
+    """Kesepakatan pada post_id yang ada di kedua berkas ekspor."""
+    a = {r["post_id"]: r for r in baca(a_path) if (r.get("reviewer") or "").strip()}
+    b = {r["post_id"]: r for r in baca(b_path) if (r.get("reviewer") or "").strip()}
+    ov = sorted(set(a) & set(b))
+    nama_a = sorted({a[p]["reviewer"].strip() for p in ov})
+    nama_b = sorted({b[p]["reviewer"].strip() for p in ov})
+    print(f"{a_path.name} ({', '.join(nama_a) or '-'}) vs {b_path.name} ({', '.join(nama_b) or '-'})")
+    print(f"  post_id yang ada di keduanya: {len(ov)}")
+    if nama_a == nama_b:
+        print("  PERINGATAN: peninjau sama. Ini konsistensi satu orang (test-retest),")
+        print("  bukan kesepakatan antarpeninjau.")
+    if not ov:
+        return
+    for k in KOLOM:
+        pasang = [(a[p][k].strip(), b[p][k].strip()) for p in ov
+                  if a[p].get(k, "").strip() and b[p].get(k, "").strip()]
+        if not pasang:
+            continue
+        x, y = zip(*pasang)
+        setuju = sum(i == j for i, j in pasang) / len(pasang)
+        kappa = cohen_kappa_score(x, y) if len(set(x) | set(y)) > 1 else float("nan")
+        print(f"  {k}: n={len(pasang)}, setuju={setuju:.0%}, kappa={kappa:.2f}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--snapshot")
+    ap.add_argument("berkas", nargs="*", help="dua CSV ekspor untuk dibandingkan langsung")
     args = ap.parse_args()
+    if args.berkas:
+        if len(args.berkas) != 2:
+            sys.exit("Beri tepat dua berkas, atau tidak sama sekali.")
+        return bandingkan_berkas(Path(args.berkas[0]), Path(args.berkas[1]))
     out = ROOT / "data/processed"
     # Nama folder memuat tanggal + hash isi, sehingga urutan abjad bukan urutan waktu.
     folder = (out / f"preprocess_{args.snapshot}" if args.snapshot else

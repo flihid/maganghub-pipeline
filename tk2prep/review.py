@@ -24,7 +24,7 @@ FIELD_KEPUTUSAN = {
     "aspek_manual": None,  # teks bebas/terkontrol di panduan; tidak divalidasi ketat
 }
 KOLOM_LOG = ["platform", "post_id", "reviewer", *FIELD_KEPUTUSAN, "catatan", "imported_at", "source_file"]
-REVIEWER_TERLARANG = {"auto", "otomatis", "agent", "claude", "model", "rule"}
+REVIEWER_TERLARANG = {"auto", "otomatis", "agent", "bot", "skrip", "model", "rule", "ai"}
 
 
 def _baca_csv(path: Path) -> list[dict]:

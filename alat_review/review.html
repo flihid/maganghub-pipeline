@@ -82,7 +82,7 @@ const FIELDS = [
 ];
 const TEKS_BEBAS = [['aspek_manual', 'Aspek', 'mis. uang_saku;pencairan'], ['catatan', 'Catatan', 'alasan singkat, terutama untuk ragu']];
 const SEMUA_KOLOM = [...FIELDS.map(f => f.k), ...TEKS_BEBAS.map(t => t[0])];
-const TERLARANG = new Set(['auto', 'otomatis', 'agent', 'claude', 'model', 'rule']);
+const TERLARANG = new Set(['auto', 'otomatis', 'agent', 'bot', 'skrip', 'model', 'rule', 'ai']);
 
 let header = [], rows = [], namaFile = '', label = {}, posisi = 0;
 const $ = id => document.getElementById(id);

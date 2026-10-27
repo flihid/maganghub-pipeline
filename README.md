@@ -14,6 +14,11 @@ Ringkasan hasil pengumpulan data untuk laporan bagian C ada di
 [korpus X](#temuan-pengumpulan-data-x), [korpus Threads](#temuan-pengumpulan-data-threads), dan
 [ringkasan gabungan](#ringkasan-gabungan-x-dan-threads).
 
+**Penulis laporan mulai dari [Panduan menulis laporan bagian C](#panduan-menulis-laporan-bagian-c)
+di bagian paling bawah.** Di sana sudah dipilihkan isi tiap subbagian C1 sampai C7, angka mana
+yang dipakai, dan klaim mana yang tidak boleh ditulis. Bagian-bagian di atasnya adalah bahan
+mentah yang jauh melebihi batas kata.
+
 ## Alur pipeline
 
 ```
@@ -637,6 +642,7 @@ Varian korpus yang tersedia untuk analisis:
 | Teks sangat pendek | 95 unggahan kurang dari 4 token | Sedikit informasi untuk pemodelan topik | Hanya ditandai di `teks_pendek`, tidak dibuang |
 | Presisi aturan terukur, satu peninjau | 312 baris keputusan masuk, mencakup 252 unggahan unik, 232 di korpus X. Pada sampel berstrata 200 unggahan, status `keep` otomatis disetujui peninjau pada **91,5% ± 5,0** populasi *model-ready* (n=118 baris tegas, 17 baris `ragu`). Aturan relevansi saja 95,0% ± 3,9; aturan promosi saja 89,2% ± 4,9. Status `exclude` disetujui 98,6% ± 1,6, jadi aturan jarang membuang unggahan yang relevan | Presisi korpus sudah terukur, tetapi hanya oleh satu peninjau, sehingga kesepakatan antarpeninjau belum ada. 17 baris `ragu` berarti batas bawah pesimistis presisi `keep` adalah 80,0% | Dihitung dengan `alat_review/presisi_aturan.py` memakai bobot strata dan koreksi populasi terbatas. Baris `ragu` tidak dibuang diam-diam, melainkan dilaporkan sebagai dua batas |
 | Kesepakatan antarpeninjau belum ada | 40 baris kalibrasi `kalibrasi_dua_peninjau=1` sudah diisi satu peninjau; peninjau kedua belum | Cohen's kappa tidak dapat dilaporkan, sehingga tidak diketahui apakah definisi "relevan" dipahami sama oleh dua orang | `alat_review/kappa_kalibrasi.py` siap dijalankan begitu peninjau kedua mengisi 40 baris yang sama secara terpisah |
+| Konsistensi satu peninjau rendah untuk relevansi | 20 unggahan kebetulan dinilai dua kali oleh peninjau yang sama, di berkas sampel (petunjuk mesin disembunyikan) dan di berkas antrean (petunjuk ditampilkan). Relevansi: setuju 70%, kappa 0,51. Promosi: setuju 85%, kappa 0,71. Seluruh perbedaannya satu arah, yaitu memilih `ragu` ketika petunjuk mesin terlihat | Penilaian relevansi tidak stabil bahkan untuk satu orang, dan tampilan petunjuk mesin ikut memengaruhinya. Ini batas bawah, bukan pengganti kesepakatan antarpeninjau, dan diukur pada 20 unggahan tersulit karena semuanya berasal dari antrean `pending` | Dilaporkan apa adanya. Dihitung ulang dengan `python alat_review/kappa_kalibrasi.py <sampel>.csv <antrean>.csv`. Untuk putaran berikutnya, petunjuk mesin sebaiknya disembunyikan di kedua jenis berkas |
 | Garam pseudonimisasi tidak diversikan | `.salt` adalah berkas lokal dan sengaja tidak masuk repositori, sehingga `user_hash` berbeda bila *preprocessing* dijalankan di komputer lain | Nilai `user_hash` hanya dapat dibandingkan di dalam satu kali pengolahan. Jumlah penulis unik tidak terpengaruh, karena pemetaannya tetap satu-ke-satu | Dinyatakan sebagai konsekuensi yang diterima. Analisis per akun harus memakai keluaran dari satu kali pengolahan yang sama |
 | Batas fase belum terverifikasi | Batas di `config.JENDELA_WAKTU` mengikuti TK1 §1.6 yang merujuk berita, bukan tanggal resmi yang sudah diverifikasi | Unggahan di dekat batas fase bisa salah kelompok | Dinyatakan sebagai asumsi. `fase_raw` dan `fase_raw_berbeda` disimpan untuk pemeriksaan ulang |
 | Keterwakilan populasi | Pengguna X tidak mewakili seluruh lulusan baru Indonesia. Unggahan yang dihapus atau dari akun terkunci tidak terjaring. Metrik keterlibatan adalah nilai saat pengambilan, bukan nilai akhir | Temuan bersifat indikatif atas wacana daring | Tidak digeneralisasi sebagai opini nasional. Waktu pengambilan metrik disimpan di `metrik_scraped_at` |
@@ -851,7 +857,7 @@ karier: `viralyn.daily`, `mcinews.id`, `titik_temu.news`, `satu_meja.id`, `teman
 | Isu | Temuan | Dampak | Mitigasi |
 |---|---|---|---|
 | Presisi kata kunci rendah | 2.615 dari 6.028 unggahan terjaring tanpa menyebut nama program di teksnya, 43,4% data mentah. Pencarian Threads tidak mendukung frasa persis | Hampir separuh data mentah tidak dapat dipastikan membahas program ini | Jalur relevansi konteks tidak dipakai untuk Threads. Korpus dibatasi pada unggahan yang menyebut nama program |
-| Konsekuensi pembatasan itu | 1.089 unggahan dikeluarkan dengan alasan `relevansi_konteks_tidak_dipakai` | Unggahan yang sebenarnya relevan tetapi tidak menyebut nama program ikut terbuang, misalnya keluhan soal *batch* atau pencairan uang saku | Keputusan dan alasannya tercatat di `config.py` dan `exclusion_log_threads.csv`, sehingga analisis ulang tanpa pembatasan ini masih mungkin. Dasar pemeriksaan sampel perlu dinyatakan di laporan |
+| Konsekuensi pembatasan itu | 1.089 unggahan dikeluarkan dengan alasan `relevansi_konteks_tidak_dipakai`. Pemeriksaan kata kunci otomatis atas seluruh 1.089: 827 (75,9%) tetap menyebut "magang" atau "pemagangan", 325 (29,8%) menyebut "kemnaker", dan 262 (24,1%) tidak menyebut magang sama sekali. Sebarannya fase 1 271, fase 2 250, fase 3 568 | 325 unggahan yang menyebut Kemnaker adalah kerugian *recall* yang paling mungkin nyata: pola `kemnaker` termasuk istilah konteks, bukan nama program, sehingga keluhan seperti "kemnaker belum cairkan uang saku" ikut terbuang. Sebaliknya 262 unggahan tanpa kata magang memang pantas keluar | Keputusan dan alasannya tercatat di `config.py` dan `threads/exclusion_log_threads.csv`, sehingga analisis ulang tanpa pembatasan ini masih mungkin. Pemeriksaan di atas bersifat otomatis dan berbasis kata kunci, bukan pembacaan manusia, dan harus disebut demikian di laporan |
 | Perlakuan berbeda antarplatform | Korpus X memakai jalur konteks, korpus Threads tidak | Kriteria inklusi kedua korpus tidak identik, sehingga penggabungan perlu dinyatakan sebagai korpus dengan dua aturan | Kolom `relevansi_jalur` memungkinkan penyeragaman dengan membuang jalur konteks di korpus X juga |
 | Tidak ada filter tanggal | 139 unggahan terjaring di luar periode penelitian, paling tua 16 Desember 2025 | Pencarian tidak dapat diarahkan ke fase tertentu | Penyaringan tanggal dilakukan saat *preprocessing* dengan interval `[awal 00.00 WIB, akhir 00.00 WIB)` |
 | Metadata minim | `post_lang`, `content_type`, `n_quote`, dan `text_truncated` kosong untuk seluruh 6.028 unggahan | Penyaringan bahasa, analisis jenis unggahan, dan verifikasi keutuhan teks tidak mungkin dilakukan di korpus ini | Dilaporkan di `threads/missingness_threads.csv`. Analisis yang memerlukan atribut ini dibatasi pada korpus X |
@@ -926,10 +932,10 @@ baru terukur untuk korpus X; angka 91,5% tidak boleh dipakai untuk korpus Thread
 
 | Pekerjaan | Keadaan | Akibat bila dibiarkan |
 |---|---|---|
-| Peninjau kedua untuk kalibrasi | 40 baris `kalibrasi_dua_peninjau=1` di `sampel_review_x.csv` sudah diisi `peninjau_1`; peninjau kedua belum | Cohen's kappa tidak dapat dilaporkan. Angka validasi 76,7% dari putaran pertama berasal dari korpus lama dan tidak berlaku untuk *snapshot* ini |
-| Sampel berstrata Threads | `threads/sampel_review_threads.csv` 200 baris, belum diisi; 20 unggahan Threads yang sudah ditinjau semuanya berasal dari antrean `pending`, bukan dari sampel acak | Presisi aturan untuk korpus Threads tidak dapat dilaporkan. Angka 91,5% hanya berlaku untuk korpus X |
+| Peninjau kedua untuk kalibrasi | 40 baris `kalibrasi_dua_peninjau=1` di `sampel_review_x.csv` sudah diisi `peninjau_1`; peninjau kedua tidak jadi mengisi karena keterbatasan waktu tim | Cohen's kappa antarpeninjau tidak dapat dilaporkan. Yang tersedia hanya konsistensi satu peninjau pada dua kesempatan (relevansi kappa 0,51; promosi kappa 0,71, n=20), dan itu bukan penggantinya. Angka validasi 76,7% dari putaran pertama berasal dari korpus lama dan tidak berlaku untuk *snapshot* ini |
+| Sampel berstrata Threads | `threads/sampel_review_threads.csv` 200 baris, tidak jadi diisi pada putaran ini; 20 unggahan Threads yang sudah ditinjau seluruhnya berasal dari antrean `pending`, bukan dari sampel acak | Presisi aturan untuk korpus Threads tidak dapat dilaporkan. Angka 91,5% hanya berlaku untuk korpus X, dan laporan harus menyebut kekosongan ini di C5 |
 | Antrean `pending` | 20 unggahan di korpus X, seluruhnya ditahan karena peninjau sendiri ragu | 0,2% unggahan unik gabungan tidak masuk korpus maupun dibuang. Keputusannya bergantung pada teks kutipan atau unggahan induk yang tidak tersimpan |
-| Dasar pembatasan Threads | Pemeriksaan sampel yang mendasari pengecualian 1.089 unggahan tercatat sebagai komentar di `config.py`, bukan sebagai keputusan peninjau di `data/annotations/` | Pengecualian terbesar di korpus Threads tidak punya jejak yang dapat diverifikasi. Jumlah sampel dan nama peninjau perlu dinyatakan di laporan |
+| Dasar pembatasan Threads | Pemeriksaan manusia yang mendasari pengecualian 1.089 unggahan tercatat sebagai komentar di `config.py`, bukan sebagai keputusan peninjau di `data/annotations/`. Sebagai gantinya tersedia pemeriksaan kata kunci otomatis atas seluruh 1.089 unggahan, angkanya ada di C5 korpus Threads | Pengecualian terbesar di korpus Threads tidak punya jejak pembacaan manusia yang dapat diverifikasi. Laporan harus menyebut dasarnya sebagai pemeriksaan otomatis, bukan sebagai peninjauan manusia |
 | Pemeriksaan label akun | 7.154 unggahan *model-ready* berlabel `tidak_terdaftar` | Pemisahan opini publik dari narasi resmi belum terjamin |
 | Audit *snapshot* | `data/interim/` tercantum di `.gitignore`, sehingga folder *snapshot* tidak ada di salinan repositori | Terpecahkan. Folder *snapshot* dapat dibangun ulang dari `data/raw/` memakai `byte_limit` dan `sha256` di `snapshot_manifest.json`; setelah itu `preprocess_tk2.py audit` berjalan dan berstatus OK. Langkahnya ada di "Catatan reproduksi" |
 
@@ -1042,7 +1048,11 @@ sehingga Git tidak mengubah akhir baris berkas data. Laporan dan konfigurasi yan
 `preprocess_tk2.py run` juga ditulis dengan akhir baris LF di semua sistem operasi, supaya
 keluaran dari dua komputer berbeda dapat dibandingkan langsung.
 
-### Panduan panjang tulisan laporan bagian C
+## Panduan menulis laporan bagian C
+
+Bagian ini untuk penulis laporan. Seluruh README di atas adalah bahan mentah dan jauh melebihi
+batas kata, jadi di bawah ini sudah dipilihkan apa yang masuk ke tiap subbagian, angka mana yang
+dipakai, dan klaim mana yang tidak boleh ditulis.
 
 | Bagian | Panjang | Wajib ada |
 |---|---|---|
@@ -1054,6 +1064,133 @@ keluaran dari dua komputer berbeda dapat dibandingkan langsung.
 | C6. Pertimbangan etika | 100 sampai 150 kata | |
 | C7. Ringkasan | 100 sampai 150 kata | |
 
-Tabel di bagian ini jauh melebihi batas kata tersebut karena berfungsi sebagai bahan mentah.
-Pilih angka yang paling penting untuk laporan, dan rujuk berkas keluarannya untuk sisanya.
-Jangan menambahkan angka yang tidak ada di folder *snapshot*.
+Tiga aturan yang berlaku di semua subbagian:
+
+1. Angka hanya boleh berasal dari `data/processed/preprocess_20261026_3067bfd95e/`. Jalankan
+   `python cek_angka_readme.py`; kalau lolos, angka di README cocok dengan *snapshot*.
+2. Jangan menulis nama akun pribadi dan jangan mengutip unggahan persis. Akun lembaga
+   (Kemnaker, media, `meta.ai`) boleh disebut. Contoh unggahan diparafrasekan.
+3. Istilah asing dicetak miring. Kalimat aktif. Tanpa kalimat pembuka basa-basi.
+
+### Isi C1. Kebutuhan data
+
+Tulis: dua platform dengan peran berbeda, X sebagai korpus utama dan Threads sebagai pelengkap;
+periode 1 Juli sampai 25 Oktober 2026 yang dibagi tiga fase; lima kata kunci yang sama di kedua
+platform; atribut yang diambil (teks, waktu unggah, bahasa, jenis unggahan, metrik keterlibatan)
+beserta kaitannya dengan ketiga pertanyaan penelitian; kriteria inklusi dan eksklusi.
+
+Angka: 11.285 unggahan mentah unik, 7.453 *model-ready*.
+
+Jangan menulis bahwa korpus ini mewakili seluruh percakapan tentang program. Ini hasil pencarian
+dengan batas kolektor, bukan sensus.
+
+### Isi C2. Pipeline pengumpulan data
+
+Pakai diagram di bagian "Alur pipeline" di awal README ini. Gambar ulang rapi, jangan menempel
+teks ASCII-nya.
+
+Teknologi yang perlu muncul di diagram: Python 3.12 sampai 3.13; `twscrape` 0.20.1 yang memakai
+*endpoint* internal X dengan sesi akun, bukan API resmi berbayar; Playwright (Chromium) untuk
+pembacaan DOM X dan untuk Threads yang mewajibkan login; pandas dan scikit-learn (TF-IDF
+`char_wb` 3-5) di tahap *preprocessing*; JSONL sebagai penyimpanan mentah; CSV dan JSONL sebagai
+keluaran.
+
+Jelaskan empat tahap: pengambilan per platform, pembekuan *snapshot* dengan `sha256`,
+*preprocessing* bersama untuk kedua platform, lalu peninjauan manusia yang keputusannya
+dimasukkan kembali dan menang atas aturan.
+
+Satu hal yang membedakan pipeline ini dan layak ditonjolkan: *snapshot* dibekukan sebelum
+diolah, sehingga angka yang dilaporkan dapat diverifikasi ulang tanpa mengumpulkan data lagi.
+
+### Isi C3. Metode pengumpulan data
+
+Tautan repositori: <https://github.com/flihid/maganghub-pipeline>
+
+Tulis: satu kueri gabungan lima kata kunci dengan `OR` dan filter `lang:in` di X, dijalankan per
+hari kalender atas seluruh 117 hari; Threads tidak mendukung frasa persis, filter bahasa, maupun
+filter tanggal, sehingga penyaringan dipindahkan ke tahap *preprocessing*; jeda minimum 5 detik
+antar-halaman dan 25 detik antar-kueri yang dipaksakan di tingkat validasi argumen; penanganan
+status 429 dengan berhenti, bukan dengan mengakalinya.
+
+Angka per platform: X 5.257 unggahan mentah unik dari 3 berkas, Threads 6.028 dari 5 berkas.
+
+Sebutkan juga filter bahasa yang salah di awal pengambilan: `lang:id` mengembalikan nol hasil
+untuk rentang yang `lang:in` mengembalikan unggahan Indonesia, sehingga hari yang kosong dengan
+filter lama diambil ulang. Ini contoh keputusan metodologis yang terdokumentasi, bukan kelemahan
+yang disembunyikan.
+
+### Isi C4. Implementasi pipeline
+
+Tulis urutan yang benar-benar dijalankan, bukan rencana: `twscrape_pipeline.py plan` sampai
+`collect`, lalu `02_scrape_threads.py`, lalu `preprocess_tk2.py snapshot` dan `run`, lalu
+`import-review` dan `run` sekali lagi, lalu `audit`.
+
+Jelaskan tiga mekanisme yang membuat hasilnya dapat diperiksa:
+
+- Setiap unggahan mendapat tepat satu `status_final` dan satu `alasan_utama`, dan
+  `keep + pending + exclude` selalu sama dengan jumlah unggahan unik. Rekonsiliasi berstatus OK
+  di kedua korpus.
+- Keputusan manusia disimpan *append-only* di `data/annotations/review_decisions_log.csv`, di
+  luar folder keluaran, sehingga menjalankan ulang *preprocessing* tidak menghapusnya.
+- Sampel berstrata dibekukan, sehingga bobot dan baris kalibrasinya tetap sah meski
+  *preprocessing* dijalankan berkali-kali.
+
+Angka tahapan X: mentah 5.257, karantina 0, unik 5.257, dikeluarkan 974, menunggu peninjau 20,
+*model-ready* 4.263. Threads: 6.028, 0, 6.028, 2.838, 0, 3.190.
+
+### Isi C5. Kualitas data dan keterbatasannya
+
+Batas katanya paling ketat, jadi ambil empat hal ini dan tinggalkan sisanya ke README:
+
+1. **Presisi aturan terukur untuk korpus X.** Dari sampel berstrata 200 unggahan, status `keep`
+   disetujui peninjau pada 91,5% ± 5,0 populasi *model-ready*, dengan batas bawah pesimistis
+   80,0% bila 17 baris `ragu` dianggap salah. Status `exclude` disetujui 98,6% ± 1,6.
+2. **Kesepakatan antarpeninjau tidak ada.** Baru satu peninjau mengisi baris kalibrasi, sehingga
+   Cohen's kappa antarpeninjau tidak dapat dilaporkan. Yang tersedia hanya konsistensi satu
+   peninjau pada dua kesempatan, relevansi kappa 0,51 dan promosi kappa 0,71 atas 20 unggahan
+   tersulit. Tulis sebagai keterbatasan, bukan sebagai pengganti.
+3. **Presisi korpus Threads belum terukur**, dan kriteria inklusinya berbeda dari X karena jalur
+   relevansi konteks tidak dipakai. Angka 91,5% tidak berlaku untuk Threads.
+4. **Konten kampanye terkoordinasi**, 0,8% di korpus X dan 6,8% di korpus Threads, menggeser
+   distribusi sentimen ke arah positif tepat pada variabel yang diukur RQ2.
+
+Kalau masih ada ruang, tambahkan satu kalimat bahwa tidak satu pun dari 117 hari berstatus
+lengkap, sehingga volume per tanggal tidak boleh dibaca sebagai volume percakapan sebenarnya.
+
+### Isi C6. Pertimbangan etika
+
+Ambil empat ini:
+
+1. **Tidak menembus pembatasan platform.** Pipeline tidak menyamarkan otomatisasi, tidak
+   menyalin *cookie*, dan tidak mengakali status 429. Ketika platform menolak, pengumpulan
+   berhenti dan dicatat sebagai keterbatasan.
+2. **Minimalisasi dan pseudonimisasi.** Nama tampilan, foto profil, bio, dan jumlah pengikut
+   tidak diambil. *Username* diganti hash SHA-256 bergaram di seluruh keluaran olahan.
+   Pseudonimisasi bukan anonimisasi, karena teks unggahan publik tetap dapat dicari.
+3. **Data mentah berada di repositori publik atas keputusan tim**, dan masih memuat *username*.
+   Nyatakan ini terbuka sebagai konsekuensi yang diterima demi reproduktibilitas. Jangan
+   dilewati, karena repositorinya memang dapat dibuka siapa saja.
+4. **Ketentuan layanan.** Rujuk langsung ketentuan X dan Meta/Threads tentang pengumpulan data
+   otomatis. Tautannya belum ada di README, jadi cari sendiri dan cantumkan di daftar pustaka.
+
+### Isi C7. Ringkasan
+
+Satu paragraf: apa yang terkumpul, dengan apa, seberapa dapat dipercaya, dan apa yang belum.
+
+Angka inti: 11.285 unggahan mentah unik menjadi 7.453 *model-ready* dari dua platform; fase 1
+3.074 unggahan (41,2%), fase 2 1.538 (20,6%), fase 3 2.841 (38,1%); presisi aturan korpus X
+91,5% ± 5,0.
+
+Tutup dengan dua kekurangan yang jujur: kesepakatan antarpeninjau belum terukur, dan presisi
+korpus Threads belum terukur.
+
+### Yang tidak boleh ditulis
+
+- Jangan menulis bahwa data sudah divalidasi dua peninjau. Belum.
+- Jangan memakai 91,5% untuk korpus Threads atau untuk korpus gabungan. Itu angka korpus X.
+- Jangan menyebut kappa 0,51 sebagai kesepakatan antarpeninjau. Itu satu orang, dua kesempatan.
+- Jangan memakai angka validasi 76,7% dari putaran pertama. Itu berasal dari korpus lama.
+- Jangan menulis bahwa 1.089 unggahan Threads dikeluarkan setelah pembacaan manusia. Dasarnya
+  pemeriksaan kata kunci otomatis.
+- Jangan mengambil angka dari `preprocess_20261026_d11a2b74c6/`, `maganghub_bersih.csv`, atau
+  `ringkasan_per_fase.csv`. Semuanya keluaran lama dengan aturan yang berbeda.

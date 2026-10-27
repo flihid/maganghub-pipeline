@@ -47,3 +47,12 @@ Setelah kedua hasil diimpor:
 ```
 python alat_review/kappa_kalibrasi.py
 ```
+
+Dua berkas ekspor juga bisa dibandingkan langsung tanpa impor:
+
+```
+python alat_review/kappa_kalibrasi.py A.csv B.csv
+```
+
+Kalau nama peninjau di kedua berkas sama, yang terukur adalah konsistensi satu orang pada dua
+kesempatan, bukan kesepakatan antarpeninjau. Skripnya memperingatkan sendiri bila itu terjadi.
