@@ -619,6 +619,7 @@ Varian korpus yang tersedia untuk analisis:
 | Presisi kueri gabungan | 504 unggahan terjaring tanpa bukti nama program di teksnya, karena kueri `OR` memuat frasa generik | 9,6% data mentah tidak dapat dipastikan membahas program ini | Relevansi dinilai dari bukti di teks, bukan dari kueri. Jalur relevansi disimpan di `relevansi_jalur` |
 | Relevansi yang bersandar konteks | 22 unggahan hanya relevan karena kueri jangkar atau konteks | Tidak dapat dipastikan tanpa pembacaan manusia | Ditahan sebagai `pending`, tidak dimasukkan maupun dibuang sepihak |
 | Promosi komersial | 415 unggahan dikeluarkan karena penawaran jasa atau pengumuman lowongan mitra, 30 ditahan karena ambigu | Jasa joki pendaftaran menggelembungkan frekuensi topik dan bukan opini publik | Aturan `promosi_v3` memisahkan penawaran berbukti dari kritik dan diskusi uang saku. Sinyal dan alasan setiap keputusan tercatat di `exclusion_log_x.csv` |
+| Konten kampanye terkoordinasi | 33 unggahan *model-ready* (0,8%) memakai tagar kampanye `#magangnasional`, `#jagaindonesia`, `#indonesiamaju`, atau `#magangnasional2026`, dari 19 penulis unik | Unggahan promosi program bukan opini publik, dan dapat menggeser distribusi sentimen ke arah positif | Proporsinya kecil di korpus X. Tagar disimpan di teks, sehingga unggahan ini dapat dikeluarkan saat analisis sentimen |
 | Dominasi akun | 2.651 penulis unik untuk 5.257 unggahan. Akun paling aktif menyumbang 125 unggahan; lima akun teratas menyumbang 125, 110, 107, 92, dan 90 unggahan | Opini segelintir akun sangat aktif dapat ikut membentuk gambaran | Dinyatakan sebagai keterbatasan. `user_hash` memungkinkan pembobotan atau analisis per akun |
 | Duplikasi dan salin-tempel | 47 grup teks identik mencakup 287 unggahan; grup terbesar berisi 85 unggahan. 44 grup duplikat-dekat mencakup 344 unggahan | Menggelembungkan frekuensi topik | Hanya ditandai, tidak dihapus. Varian satu wakil per teks identik disediakan (4.257 unggahan) |
 | Metadata tidak lengkap | `n_quote`, `conversation_id`, dan `content_type` kosong pada 2,45% unggahan; `post_lang` kosong pada 0,23% | Analisis jenis unggahan dan percakapan kehilangan sebagian data | Kekosongan disimpan sebagai `null`, bukan 0, dan dilaporkan di `missingness_x.csv` |
@@ -847,6 +848,7 @@ karier: `viralyn.daily`, `mcinews.id`, `titik_temu.news`, `satu_meja.id`, `teman
 | Metadata minim | `post_lang`, `content_type`, `n_quote`, dan `text_truncated` kosong untuk seluruh 6.028 unggahan | Penyaringan bahasa, analisis jenis unggahan, dan verifikasi keutuhan teks tidak mungkin dilakukan di korpus ini | Dilaporkan di `threads/missingness_threads.csv`. Analisis yang memerlukan atribut ini dibatasi pada korpus X |
 | Kepadatan fase 1 rendah | 11,7 unggahan per hari di fase 1 berbanding 51,8 di fase 3, dan hanya 47 dari 62 hari fase 1 terisi | Tidak dapat dipisahkan apakah ini peningkatan diskusi yang nyata atau efek urutan hasil pencarian yang mengutamakan unggahan terbaru | Dinyatakan sebagai keterbatasan. Perbandingan RQ3 memakai proporsi dan menyertakan korpus X yang kepadatannya merata |
 | Dominasi akun | 3.881 penulis unik untuk 6.028 unggahan. Akun paling aktif menyumbang 79 unggahan | Opini akun sangat aktif dapat ikut membentuk gambaran | Dinyatakan sebagai keterbatasan. `user_hash` memungkinkan analisis per akun |
+| Konten kampanye terkoordinasi | 218 unggahan *model-ready* (6,8%) memakai tagar kampanye, terbanyak `#magangnasional` 141, `#indonesiakita` 59, dan `#jagaindonesia` 51. Berasal dari 143 penulis unik, dengan 38 unggahan berteks identik dalam 9 grup | Teks promosi yang sama diunggah banyak akun berbeda. Ini bukan opini publik dan menggeser distribusi sentimen ke arah positif, tepat pada variabel yang diukur penelitian ini | Belum disaring. Proporsinya delapan kali lebih besar daripada korpus X, sehingga analisis sentimen Threads sebaiknya dilaporkan dengan dan tanpa 218 unggahan ini |
 | Duplikasi | 88 grup teks identik mencakup 252 unggahan; 42 grup duplikat-dekat mencakup 138 unggahan | Menggelembungkan frekuensi topik | Hanya ditandai. Varian satu wakil per teks identik disediakan (3.083 unggahan) |
 | Pembatasan platform | Status 429 diterima pada dua putaran | Pengumpulan terhenti sebagian | Skrip berhenti otomatis, jeda *scroll* diperlambat, pengambilan diulang setelah beberapa jam |
 | Data pribadi dalam teks | 85 unggahan bertanda indikasi data pribadi di teks aslinya | Risiko privasi | Disamarkan dengan penanda di seluruh versi teks |
@@ -916,7 +918,6 @@ dari pengumpulan putaran pertama yang hampir tidak menjangkau fase itu.
 | Dasar pembatasan Threads | Pemeriksaan sampel yang mendasari pengecualian 1.089 unggahan tercatat sebagai komentar di `config.py`, bukan sebagai keputusan peninjau di `data/annotations/` | Pengecualian terbesar di korpus Threads tidak punya jejak yang dapat diverifikasi. Jumlah sampel dan nama peninjau perlu dinyatakan di laporan |
 | Pemeriksaan label akun | 7.170 unggahan *model-ready* berlabel `tidak_terdaftar` | Pemisahan opini publik dari narasi resmi belum terjamin |
 | Audit *snapshot* | `data/interim/` tercantum di `.gitignore`, sehingga folder *snapshot* tidak ada di salinan repositori | `preprocess_tk2.py audit` tidak dapat dijalankan ulang dari repositori. *Snapshot* masih ada di laptop penjalan *preprocessing*, dan `sha256` di `snapshot_manifest.json` tetap dapat memverifikasi data mentah |
-| Data Threads putaran pertama | 1.092 unggahan dari pengumpulan putaran pertama tersimpan di `data/raw_tambahan_putaran1/` dan belum masuk korpus. Perkiraan bila digabung: 439 lolos, 67 perlu peninjau, 586 terbuang | Korpus Threads kehilangan sekitar 439 unggahan yang sudah pernah terambil |
 
 Alur peninjauan: buka `alat_review/review.html` di browser, isi nama peninjau, pilih
 `sampel_review_<platform>.csv` atau `antrean_review_<platform>.csv`, labeli dengan pintasan
@@ -925,6 +926,38 @@ tombol, lalu ekspor CSV. Jalankan `python preprocess_tk2.py import-review <berka
 dua orang mengisi 40 baris `kalibrasi_dua_peninjau=1` secara terpisah, lalu jalankan
 `python alat_review/kappa_kalibrasi.py`. Keputusan manusia mengalahkan aturan, dan peninjau
 bernama `auto`, `agent`, atau `model` ditolak oleh skrip.
+
+### Keputusan: data Threads putaran pertama tidak digabungkan
+
+Pengumpulan Threads putaran pertama menyimpan 1.092 unggahan yang tidak terjaring lagi pada
+putaran kedua, karena hasil pencarian Threads bergeser antar-waktu. Berkasnya ada di
+`data/raw_tambahan_putaran1/threads_putaran1_tambahan.jsonl` dan sengaja diletakkan di luar
+`data/raw/` agar tidak ikut terbaca oleh `preprocess_tk2.py snapshot`.
+
+Simulasi dengan aturan yang berlaku sekarang memberi 425 unggahan lolos, 666 dikeluarkan, dan 1
+menunggu peninjau. Pemeriksaan atas 425 unggahan yang lolos menunjukkan masalah:
+
+| Temuan | Angka |
+|---|---:|
+| Lolos lewat jalur `eksplisit_generik`, yaitu hanya menyebut "magang nasional" atau "pemagangan nasional" | 309 dari 425 (73%) |
+| Di antaranya yang sama sekali tidak menyebut MagangHub maupun Kemnaker | 302 dari 309 (98%) |
+| Terjaring oleh kata kunci `magang nasional` | 304 dari 309 |
+| Memakai tagar kampanye (`#jagaindonesia` 22%, `#indonesiakita` 20%, `#indonesiamaju` 9%) | 196 dari 305 (64%) |
+| Berteks identik dengan unggahan lain dalam kumpulan yang sama | 55 unggahan dalam 16 grup, dari 216 penulis unik |
+
+Pola ini khas kampanye terkoordinasi: naskah promosi yang sama diunggah banyak akun berbeda,
+bukan satu akun berulang. Isinya seragam positif, misalnya ajakan mengambil peluang dan
+pernyataan bahwa program membuka kesempatan. Memasukkan 302 unggahan semacam itu akan menambah
+korpus 13,4% tetapi menggeser distribusi sentimen ke arah positif secara sistematis, tepat pada
+variabel yang diukur RQ2, dan memunculkan slogan kampanye sebagai topik di RQ1.
+
+Sisa yang bersih, yaitu unggahan yang menyebut nama khas program, hanya sekitar 120 unggahan atau
+1,6% korpus gabungan. Nilainya tidak sebanding dengan risiko di atas maupun dengan biaya
+menjalankan ulang seluruh *preprocessing*.
+
+Karena itu kumpulan ini **tidak digabungkan**. Berkasnya tetap disimpan di repositori agar
+keputusan ini dapat diperiksa ulang, dan pemeriksaan di atas dapat diulang dengan
+`relevansi.py` serta `promosi.py` versi sekarang.
 
 ### Catatan reproduksi
 
