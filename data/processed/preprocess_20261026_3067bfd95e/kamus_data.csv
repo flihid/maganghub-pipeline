@@ -1,0 +1,36 @@
+﻿kolom,tipe,deskripsi
+platform,str,x atau threads (korpus diproses terpisah)
+post_id,str,ID post asli sebagai STRING (ID X 19 digit). Jangan buka di spreadsheet tanpa set kolom teks
+user_hash,str|null,"SHA-256 bergaram (16 hex) dari username; null jika author tidak ada. Pseudonim, bukan anonim"
+author_missing,bool,username tidak tersedia di raw
+jenis_akun_otomatis,str,resmi/media/akun_otomatis dari daftar config; tidak_terdaftar BUKAN bukti akun publik
+jenis_akun_manual,str|null,keputusan reviewer (publik/resmi/media/organisasi_lain/ragu/konflik)
+created_at_asal,str,timestamp persis dari raw
+created_at_utc / waktu_wib / tanggal_wib,str,timestamp ter-normalisasi; tanggal_wib dipakai untuk fase
+fase,str|null,"fase dari waktu aktual, interval [awal 00:00 WIB, akhir 00:00 WIB); null = di luar jendela"
+fase_raw / fase_raw_berbeda,str/bool,fase yang ditulis kolektor dan apakah berbeda dari perhitungan ulang
+content_type,str|null,original/reply/quote dari adapter; null untuk kolektor browser lama
+post_lang,str|null,bahasa menurut X; tidak ditebak bila kosong
+"n_reply, n_repost, n_like, n_quote",int|null,engagement pada metrik_scraped_at; null = tidak dikumpulkan (BUKAN 0)
+text_truncated,bool|null,true/false bila diketahui; null = tidak diketahui (twscrape tidak memberi flag)
+text_minimal,str,"NFC, HTML unescape, whitespace, masking [URL]/[USER]/[EMAIL]/[PHONE]/[NIK]; emoji, negasi, kapital dipertahankan"
+text_sentiment,str,baseline input transformer sentimen = text_minimal dengan deret mention pembuka diringkas
+text_sentiment_slang_v1 / slang_v1_ganti,str/json,VARIAN opsional normalisasi slang tak ambigu + log penggantian (reversible)
+text_embedding,str,"konteks utuh untuk sentence embedding BERTopic (tanpa [URL], tanpa alamat reply, '#' dilepas)"
+text_topic_repr,str,"token huruf kecil untuk CountVectorizer/c-TF-IDF; stopword fungsi dibuang, negasi & kata domain dipertahankan"
+relevansi_jalur / relevansi_bukti,str,"eksplisit, eksplisit_generik, eksplisit_handle, konteks_jangkar, konteks_or, konteks_kueri_generik, tanpa_bukti + potongan bukti"
+relevansi_otomatis / relevansi_manual,str,keputusan aturan vs reviewer (manusia menang)
+promosi_keputusan_otomatis / promosi_alasan / promosi_sinyal,str,"keputusan promosi_v3 (keep/review/exclude), alasan, sinyal"
+promosi_manual,str|null,iklan/bukan_iklan/ragu/konflik dari reviewer
+status_final / alasan_utama / alasan_lain,str,keep/pending/exclude; satu alasan utama (urutan tetap) + alasan lain
+sumber_keputusan / reviewers,str,"otomatis, manusia, atau keduanya; daftar reviewer"
+sentimen_manual / stance_manual / aspek_manual,str|null,anotasi lanjutan opsional (belum ada = null)
+teks_berulang_grup / teks_berulang_n,str/int,grup teks identik (setelah casefold & placeholder) dan ukurannya
+near_dup_grup,str|null,"grup near-duplicate (cosine char 3-5 gram >= 0.90, negasi & emoji sama)"
+split_group_id / split_group_n,str/int,gabungan grup identik + near-dup untuk split evaluasi tanpa bocor
+teks_pendek,bool,"< 4 token di text_embedding; hanya flag, tidak dibuang"
+pii_flags,str,email/telepon/angka_16_digit/nama_diri terdeteksi di teks asli (sudah dimasking kecuali nama)
+flags,str,flag validasi & kualitas (titik koma)
+collector / adapter_version / query_window / kueri_semua / language_filter / job_since / job_until / scraped_at,str,provenance pengambilan per record
+n_versi / konflik_teks / konflik_metrik / sumber_versi,int/bool/str,jumlah versi ID yang sama dan konfliknya (file:baris|kolektor)
+conversation_id,str|null,ID percakapan; konteks reply TIDAK dikumpulkan

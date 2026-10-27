@@ -48,6 +48,8 @@ Catatan penting:
 | 17 | Keputusan manusia append-only, merge `(platform, post_id)` | semua | Rerun tidak boleh menghapus anotasi; label agent bukan validasi | 0 keputusan manusia saat ini | [Implementasi] |
 | 18 | `split_group_id` disiapkan, belum ada split | RQ2 (bila fine-tune) | Duplikat/near-dup/penulis yang sama di train & test membuat evaluasi terlalu mudah | 437 post X berada di grup berukuran > 1 | [Materi] 06 hlm. 35–37; scikit-learn "Common pitfalls: data leakage" |
 | 19 | Threads diproses terpisah, tidak dicampur dengan X | semua | X korpus utama; Threads berbeda mekanisme pencarian, tanpa filter tanggal/bahasa | Threads: 6.028 raw, 139 di luar jendela, 1.109 pending | Prompt kerja; [Tugas] C5 (cakupan platform) |
+| 20 | Threads hanya memakai post yang menyebut nama program; jalur konteks di-exclude (`config.RELEVANSI_KONTEKS_DIABAIKAN`) | RQ1–3 | Pencarian Threads longgar: 2.615 dari 6.028 post tidak menyebut nama program. Sampel acak 20 post konteks berisi campuran MagangHub dan magang umum (tips interview, magang Jepang, BPJS); bukti terbanyak hanya "magang" (367) dan "kemnaker" (251). Review 1.089 post tidak sebanding untuk korpus pelengkap. Keputusan reviewer manusia tetap menang | Snapshot `20261026_3067bfd95e`: 1.089 post `relevansi_konteks_tidak_dipakai` (973 kueri jangkar + 116 kueri generik); keep tetap 3.309; pending Threads 1.109 → 22 (promosi). X tidak berubah | Keputusan tim 26 Okt 2026; [Tugas] C1, C5 |
+| 21 | `promosi_v4`: exclude pengumuman lowongan mitra, iklan jasa titipan, dan ajakan webinar/pelatihan | RQ1–2 | Pengumuman lowongan ("X membuka kesempatan magang melalui MagangHub … kirim lamaran melalui …") relevan dengan program tetapi bukan opini publik dan berbentuk template siaran yang dapat membentuk klaster semu. Syarat: suara pengumuman + instruksi melamar/detail lowongan; klausa relatif/pertanyaan ("yang buka lowongan", "ga open recruitment", "ada ga rekomendasi") dikecualikan | Dari keep sebelumnya: X −20 (18 lowongan, 2 iklan titipan), Threads −126 (122 lowongan, 4 webinar/pelatihan). Pemeriksaan sampel saat pengembangan: ±90–95% tepat; kasus perbatasan berupa judul berita/info program. Belum divalidasi label manusia; tercakup sampel review berikutnya | Keputusan tim 26 Okt 2026; [Implementasi]; tes `test_pengumuman_lowongan_mitra`, `test_iklan_titipan_order_dan_acara` |
 
 IndoBERT dasar (IndoNLU) adalah model bahasa pralatih, bukan classifier sentimen siap pakai. Pemilihan
 atau fine-tuning model sentimen berada di luar tahap ini.
@@ -113,8 +115,10 @@ idempotensi), dan contoh transformasi teks yang disamarkan.
    independen; hitung kesepakatan.
 2. Tinjau antrean X (60 post), lalu sisa sampel X. Hitung presisi aturan per strata dan presisi
    tertimbang (`bobot`).
-3. Putuskan apakah Threads dipakai. Jika ya, pertimbangkan meninjau sampel `konteks_jangkar`
-   (971 post) sebelum memutuskan aturan untuk jalur itu.
+3. ~~Putuskan apakah Threads dipakai.~~ Diputuskan 26 Okt 2026: Threads dipakai sebagai korpus
+   pelengkap, hanya post yang menyebut nama program (keputusan #20). Tersisa 22 post pending
+   promosi di `threads/antrean_review_threads.csv`. Batasan ini dicatat di C5: post Threads yang
+   membahas program tanpa menyebut namanya (mis. keluhan uang saku/mentor) tidak masuk korpus.
 4. Verifikasi batas fase terhadap sumber resmi Kemnaker. Jika berubah, ubah `config.JENDELA_WAKTU`
    secara eksplisit dan jalankan ulang.
 5. Saat memilih model sentimen, uji `text_sentiment` vs `text_sentiment_slang_v1` sebagai variabel

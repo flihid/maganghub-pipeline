@@ -61,8 +61,14 @@ python -m unittest test_preprocess_tk2 test_promosi -v
 3. **Waktu.** `created_at_asal` disimpan apa adanya. Fase dihitung dari waktu WIB aktual dengan
    interval `[awal 00:00 WIB, akhir 00:00 WIB)` dari `config.JENDELA_WAKTU`.
 4. **Relevansi** (`relevansi.py`, v2) dinilai dari bukti di teks, bukan dari kueri gabungan OR.
-5. **Promosi** (`promosi.py`, v3): penawaran dengan bukti jelas di-exclude, kasus ambigu masuk
-   review, dan permintaan/kritik/diskusi uang saku tetap dipertahankan.
+   Untuk platform di `config.RELEVANSI_KONTEKS_DIABAIKAN` (saat ini Threads), post jalur konteks
+   (tanpa nama program di teks) langsung di-exclude dengan alasan `relevansi_konteks_tidak_dipakai`,
+   bukan pending. Keputusan reviewer manusia tetap menang.
+5. **Promosi** (`promosi.py`, v4): penawaran dengan bukti jelas di-exclude, kasus ambigu masuk
+   review, dan permintaan/kritik/diskusi uang saku tetap dipertahankan. Sejak v4 juga di-exclude:
+   pengumuman lowongan dari instansi/perusahaan mitra (`pengumuman_lowongan_mitra`), iklan jasa
+   titipan "chat @akun + layanan + bukti jual" (`layanan_dengan_kontak_dan_bukti_jual`), dan ajakan
+   ikut webinar/pelatihan (`promosi_acara_pelatihan`).
 6. **Akun.** Akun di daftar config diberi label `resmi`/`media`. `meta.ai` di-exclude sebagai akun
    otomatis. Label `tidak_terdaftar` belum berarti akun publik.
 7. **Versi teks** (`tk2prep/teks.py`): lihat tabel di bawah.
@@ -144,5 +150,5 @@ ilmiah dan rusak.
 ## Hubungan dengan skrip lama
 
 `03_preprocess.py` dan `04_audit_collection.py` tetap ada untuk launcher kolektor dan masih menulis
-ke `data/processed/*.csv` lama. Keduanya kini memakai `promosi_v3` dan perbaikan `relevansi.py`.
+ke `data/processed/*.csv` lama. Keduanya kini memakai `promosi_v4` dan perbaikan `relevansi.py`.
 Output versi baru tidak menimpa file lama.
