@@ -3,8 +3,8 @@
 Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot ini.
 
 ## Status validasi
-- Keputusan manusia yang tersedia: **0 post**.
-- Tanpa label manusia, precision/recall aturan dan kesepakatan antarpeninjau **belum dapat dihitung**.
+- Keputusan manusia yang tersedia: **252 post**.
+- Presisi aturan: `python alat_review/presisi_aturan.py <sampel_terisi>.csv` (berbobot strata). Kesepakatan antarpeninjau: `python alat_review/kappa_kalibrasi.py`, yang menuntut dua peninjau pada baris kalibrasi yang sama.
 - `model_ready_*` = lolos aturan otomatis (dan review bila ada). Bukan gold standard.
 - Korpus adalah hasil pencarian X/Threads dengan batas kolektor, **bukan sensus** percakapan.
 
@@ -23,8 +23,8 @@ Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot
 ## Platform: x
 
 - Raw 5257 -> karantina 0 -> valid 5257 -> post unik 5257.
-- Status akhir: keep **4286**, pending **52**, exclude **919** (rekonsiliasi OK).
-- Model-ready: 4286 (tanpa akun resmi/media terdaftar: 4185; satu wakil per teks identik: 4257).
+- Status akhir: keep **4263**, pending **20**, exclude **974** (rekonsiliasi OK).
+- Model-ready: 4263 (tanpa akun resmi/media terdaftar: 4162; satu wakil per teks identik: 4234).
 - Sampel review berstrata: 200 post.
 
 ### Tahapan (tiap post tepat satu status/alasan utama)
@@ -36,48 +36,46 @@ Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot
 | 3_record_valid | 5257 | raw - karantina |
 | 4_versi_id_sama_digabung | 0 | dedup (platform, post_id) |
 | 5_post_unik | 5257 | basis keputusan |
-| 6_exclude_total | 919 | status akhir (tiap post tepat satu) |
-| 6.exclude:relevansi_otomatis_tanpa_bukti_teks | 504 | alasan utama; tidak tumpang tindih |
-| 6.exclude:promosi_otomatis_penawaran_eksplisit_jasa_atau_joki | 132 | alasan utama; tidak tumpang tindih |
-| 6.exclude:promosi_otomatis_penawaran_layanan_dengan_kontak_harga_atau_testimoni | 121 | alasan utama; tidak tumpang tindih |
-| 6.exclude:promosi_otomatis_paket_layanan_dengan_ajakan_kontak | 68 | alasan utama; tidak tumpang tindih |
-| 6.exclude:promosi_otomatis_layanan_dengan_kontak_dan_bukti_jual | 33 | alasan utama; tidak tumpang tindih |
-| 6.exclude:promosi_otomatis_layanan_berharga_dengan_bukti_jual | 28 | alasan utama; tidak tumpang tindih |
-| 6.exclude:promosi_otomatis_pengumuman_lowongan_mitra | 19 | alasan utama; tidak tumpang tindih |
+| 6_exclude_total | 974 | status akhir (tiap post tepat satu) |
+| 6.exclude:relevansi_otomatis_tanpa_bukti_teks | 478 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_otomatis_penawaran_eksplisit_jasa_atau_joki | 129 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_otomatis_penawaran_layanan_dengan_kontak_harga_atau_testimoni | 115 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_otomatis_paket_layanan_dengan_ajakan_kontak | 64 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_manusia_iklan | 61 | alasan utama; tidak tumpang tindih |
+| 6.exclude:relevansi_manusia_tidak_relevan | 39 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_otomatis_layanan_dengan_kontak_dan_bukti_jual | 30 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_otomatis_layanan_berharga_dengan_bukti_jual | 27 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_otomatis_pengumuman_lowongan_mitra | 17 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_promosi_komersial_kode_referal | 14 | alasan utama; tidak tumpang tindih |
-| 7_pending_total | 52 | status akhir (tiap post tepat satu) |
-| 7.pending:relevansi_konteks_or | 21 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_indikasi_penawaran_belum_pasti | 18 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_layanan_dengan_ajakan_kontak | 7 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_kritik_atau_kutipan_layanan | 4 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_tagar_banyak_dengan_sinyal_komersial | 1 | alasan utama; tidak tumpang tindih |
-| 7.pending:relevansi_konteks_jangkar | 1 | alasan utama; tidak tumpang tindih |
-| 8_keep_total | 4286 | status akhir (tiap post tepat satu) |
-| 8.keep:lolos | 4286 | alasan utama; tidak tumpang tindih |
+| 7_pending_total | 20 | status akhir (tiap post tepat satu) |
+| 7.pending:relevansi_manusia_ragu | 19 | alasan utama; tidak tumpang tindih |
+| 7.pending:promosi_manusia_ragu | 1 | alasan utama; tidak tumpang tindih |
+| 8_keep_total | 4263 | status akhir (tiap post tepat satu) |
+| 8.keep:lolos | 4263 | alasan utama; tidak tumpang tindih |
 
 ### Fase x status
 
 | fase | exclude | keep | pending | total |
 |---|---|---|---|---|
-| fase1_pengumuman | 100 | 2351 | 22 | 2473 |
-| fase2_seleksi | 33 | 897 | 6 | 936 |
-| fase3_penempatan | 786 | 1038 | 24 | 1848 |
+| fase1_pengumuman | 122 | 2345 | 6 | 2473 |
+| fase2_seleksi | 36 | 895 | 5 | 936 |
+| fase3_penempatan | 816 | 1023 | 9 | 1848 |
 
 ### Pergeseran distribusi fase akibat penyaringan
 
 | fase | post_unik_dalam_jendela | model_ready | proporsi_unik | proporsi_model_ready | retensi |
 |---|---|---|---|---|---|
-| fase1_pengumuman | 2473 | 2351 | 0.4704 | 0.5485 | 0.9507 |
-| fase2_seleksi | 936 | 897 | 0.178 | 0.2093 | 0.9583 |
-| fase3_penempatan | 1848 | 1038 | 0.3515 | 0.2422 | 0.5617 |
+| fase1_pengumuman | 2473 | 2345 | 0.4704 | 0.5501 | 0.9482 |
+| fase2_seleksi | 936 | 895 | 0.178 | 0.2099 | 0.9562 |
+| fase3_penempatan | 1848 | 1023 | 0.3515 | 0.24 | 0.5536 |
 
 ### Kolektor x status
 
 | collector | exclude | keep | pending | total |
 |---|---|---|---|---|
 | connected_brave_dom_v1 | 2 | 10 | 0 | 12 |
-| connected_brave_dom_v2 | 67 | 47 | 3 | 117 |
-| twscrape_0.20.1 | 850 | 4229 | 49 | 5128 |
+| connected_brave_dom_v2 | 72 | 43 | 2 | 117 |
+| twscrape_0.20.1 | 900 | 4210 | 18 | 5128 |
 
 ### Tumpang tindih relevansi x promosi (bukan untuk dijumlahkan)
 
@@ -106,7 +104,7 @@ Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot
 | text_truncated | 5257 | 5128 | - | 0.9755 |
 
 - text_truncated: {'unknown': 5128, 'false': 120, 'true': 9} (unknown = tidak diketahui, bukan bukti lengkap).
-- post_lang: {'in': 5202, 'en': 25, '(missing)': 12, 'lv': 4, 'qme': 2, 'tl': 2, 'und': 1, 'th': 1, 'zxx': 1, 'tr': 1, 'ja': 1, 'es': 1, 'lt': 1, 'da': 1, 'fi': 1, 'fr': 1}.
+- post_lang: {'in': 5202, 'en': 25, '(missing)': 12, 'lv': 4, 'tl': 2, 'qme': 2, 'und': 1, 'th': 1, 'tr': 1, 'zxx': 1, 'es': 1, 'ja': 1, 'lt': 1, 'da': 1, 'fi': 1, 'fr': 1}.
 - Penulis unik (hash): 2651; author missing: 0.
 - Duplikasi/pengulangan: {'post_dalam_grup_teks_identik': 287, 'grup_teks_identik': 47, 'post_dalam_grup_near_dup': 344, 'grup_near_dup': 44, 'post_dengan_split_group_lebih_dari_1': 437, 'teks_identik_max': 85}.
 - Post dengan indikasi PII di teks asli: 33; post pendek (<4 token): 95.
@@ -126,8 +124,8 @@ Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot
 ## Platform: threads
 
 - Raw 6028 -> karantina 0 -> valid 6028 -> post unik 6028.
-- Status akhir: keep **3183**, pending **20**, exclude **2825** (rekonsiliasi OK).
-- Model-ready: 3183 (tanpa akun resmi/media terdaftar: 2985; satu wakil per teks identik: 3083).
+- Status akhir: keep **3190**, pending **0**, exclude **2838** (rekonsiliasi OK).
+- Model-ready: 3190 (tanpa akun resmi/media terdaftar: 2992; satu wakil per teks identik: 3090).
 - Sampel review berstrata: 200 post.
 
 ### Tahapan (tiap post tepat satu status/alasan utama)
@@ -139,48 +137,44 @@ Dibuat otomatis oleh `preprocess_tk2.py run`. Semua angka dihitung dari snapshot
 | 3_record_valid | 6028 | raw - karantina |
 | 4_versi_id_sama_digabung | 0 | dedup (platform, post_id) |
 | 5_post_unik | 6028 | basis keputusan |
-| 6_exclude_total | 2825 | status akhir (tiap post tepat satu) |
+| 6_exclude_total | 2838 | status akhir (tiap post tepat satu) |
 | 6.exclude:relevansi_otomatis_tanpa_bukti_teks | 1421 | alasan utama; tidak tumpang tindih |
 | 6.exclude:relevansi_konteks_tidak_dipakai | 1089 | alasan utama; tidak tumpang tindih |
 | 6.exclude:di_luar_jendela | 139 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_pengumuman_lowongan_mitra | 124 | alasan utama; tidak tumpang tindih |
 | 6.exclude:akun_otomatis_config | 36 | alasan utama; tidak tumpang tindih |
+| 6.exclude:promosi_manusia_iklan | 13 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_penawaran_eksplisit_jasa_atau_joki | 5 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_promosi_acara_pelatihan | 4 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_penawaran_layanan_dengan_kontak_harga_atau_testimoni | 3 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_paket_layanan_dengan_ajakan_kontak | 2 | alasan utama; tidak tumpang tindih |
 | 6.exclude:promosi_otomatis_promosi_komersial_kode_referal | 2 | alasan utama; tidak tumpang tindih |
-| 7_pending_total | 20 | status akhir (tiap post tepat satu) |
-| 7.pending:promosi_layanan_dengan_ajakan_kontak | 6 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_indikasi_penawaran_belum_pasti | 5 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_kritik_atau_kutipan_layanan | 4 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_tagar_banyak_dengan_sinyal_komersial | 3 | alasan utama; tidak tumpang tindih |
-| 7.pending:promosi_bantuan_gratis_perlu_konteks | 2 | alasan utama; tidak tumpang tindih |
-| 8_keep_total | 3183 | status akhir (tiap post tepat satu) |
-| 8.keep:lolos | 3183 | alasan utama; tidak tumpang tindih |
+| 7_pending_total | 0 | status akhir (tiap post tepat satu) |
+| 8_keep_total | 3190 | status akhir (tiap post tepat satu) |
+| 8.keep:lolos | 3190 | alasan utama; tidak tumpang tindih |
 
 ### Fase x status
 
-| fase | exclude | keep | pending | total |
-|---|---|---|---|---|
-| di_luar_jendela | 139 | 0 | 0 | 139 |
-| fase1_pengumuman | 439 | 728 | 6 | 1173 |
-| fase2_seleksi | 412 | 643 | 1 | 1056 |
-| fase3_penempatan | 1835 | 1812 | 13 | 3660 |
+| fase | exclude | keep | total |
+|---|---|---|---|
+| di_luar_jendela | 139 | 0 | 139 |
+| fase1_pengumuman | 444 | 729 | 1173 |
+| fase2_seleksi | 413 | 643 | 1056 |
+| fase3_penempatan | 1842 | 1818 | 3660 |
 
 ### Pergeseran distribusi fase akibat penyaringan
 
 | fase | post_unik_dalam_jendela | model_ready | proporsi_unik | proporsi_model_ready | retensi |
 |---|---|---|---|---|---|
-| fase1_pengumuman | 1173 | 728 | 0.1992 | 0.2287 | 0.6206 |
-| fase2_seleksi | 1056 | 643 | 0.1793 | 0.202 | 0.6089 |
-| fase3_penempatan | 3660 | 1812 | 0.6215 | 0.5693 | 0.4951 |
+| fase1_pengumuman | 1173 | 729 | 0.1992 | 0.2285 | 0.6215 |
+| fase2_seleksi | 1056 | 643 | 0.1793 | 0.2016 | 0.6089 |
+| fase3_penempatan | 3660 | 1818 | 0.6215 | 0.5699 | 0.4967 |
 
 ### Kolektor x status
 
-| collector | exclude | keep | pending | total |
-|---|---|---|---|---|
-| threads_playwright | 2825 | 3183 | 20 | 6028 |
+| collector | exclude | keep | total |
+|---|---|---|---|
+| threads_playwright | 2838 | 3190 | 6028 |
 
 ### Tumpang tindih relevansi x promosi (bukan untuk dijumlahkan)
 

@@ -4,22 +4,18 @@
 3_record_valid,6028,raw - karantina
 4_versi_id_sama_digabung,0,"dedup (platform, post_id)"
 5_post_unik,6028,basis keputusan
-6_exclude_total,2825,status akhir (tiap post tepat satu)
+6_exclude_total,2838,status akhir (tiap post tepat satu)
 6.exclude:relevansi_otomatis_tanpa_bukti_teks,1421,alasan utama; tidak tumpang tindih
 6.exclude:relevansi_konteks_tidak_dipakai,1089,alasan utama; tidak tumpang tindih
 6.exclude:di_luar_jendela,139,alasan utama; tidak tumpang tindih
 6.exclude:promosi_otomatis_pengumuman_lowongan_mitra,124,alasan utama; tidak tumpang tindih
 6.exclude:akun_otomatis_config,36,alasan utama; tidak tumpang tindih
+6.exclude:promosi_manusia_iklan,13,alasan utama; tidak tumpang tindih
 6.exclude:promosi_otomatis_penawaran_eksplisit_jasa_atau_joki,5,alasan utama; tidak tumpang tindih
 6.exclude:promosi_otomatis_promosi_acara_pelatihan,4,alasan utama; tidak tumpang tindih
 6.exclude:promosi_otomatis_penawaran_layanan_dengan_kontak_harga_atau_testimoni,3,alasan utama; tidak tumpang tindih
 6.exclude:promosi_otomatis_paket_layanan_dengan_ajakan_kontak,2,alasan utama; tidak tumpang tindih
 6.exclude:promosi_otomatis_promosi_komersial_kode_referal,2,alasan utama; tidak tumpang tindih
-7_pending_total,20,status akhir (tiap post tepat satu)
-7.pending:promosi_layanan_dengan_ajakan_kontak,6,alasan utama; tidak tumpang tindih
-7.pending:promosi_indikasi_penawaran_belum_pasti,5,alasan utama; tidak tumpang tindih
-7.pending:promosi_kritik_atau_kutipan_layanan,4,alasan utama; tidak tumpang tindih
-7.pending:promosi_tagar_banyak_dengan_sinyal_komersial,3,alasan utama; tidak tumpang tindih
-7.pending:promosi_bantuan_gratis_perlu_konteks,2,alasan utama; tidak tumpang tindih
-8_keep_total,3183,status akhir (tiap post tepat satu)
-8.keep:lolos,3183,alasan utama; tidak tumpang tindih
+7_pending_total,0,status akhir (tiap post tepat satu)
+8_keep_total,3190,status akhir (tiap post tepat satu)
+8.keep:lolos,3190,alasan utama; tidak tumpang tindih

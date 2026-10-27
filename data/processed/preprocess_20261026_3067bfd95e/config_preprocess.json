@@ -94,5 +94,5 @@
   },
   "salt": "file lokal .salt (tidak disalin ke output)",
   "annotations_dir": "data/annotations",
-  "n_keputusan_manusia": 0
+  "n_keputusan_manusia": 252
 }

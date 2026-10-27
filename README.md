@@ -88,6 +88,7 @@ python preprocess_tk2.py run
 # Buka alat_review/review.html di browser, labeli, lalu ekspor CSV.
 python preprocess_tk2.py import-review <hasil_ekspor>.csv
 python preprocess_tk2.py run
+python alat_review/presisi_aturan.py <hasil_ekspor_sampel>.csv
 python alat_review/kappa_kalibrasi.py
 
 # Pemeriksaan akhir
@@ -352,6 +353,12 @@ bawah dapat diverifikasi ulang tanpa menjalankan kembali pengumpulan data. Rinci
 di `LAPORAN_KUALITAS.md` di folder yang sama, dan `cek_angka_readme.py` membandingkan angka di
 bawah dengan keluaran *snapshot*.
 
+Angka di bawah sudah memuat putaran pertama peninjauan manusia: 312 baris keputusan atas 252
+unggahan unik, dari satu peninjau. Keputusan peninjau mengalahkan aturan otomatis, sehingga
+angka *model-ready* di sini lebih kecil daripada hasil aturan murni (X 4.286, Threads 3.183).
+Keputusannya tersimpan *append-only* di `data/annotations/review_decisions_log.csv`, di luar
+folder *snapshot*, sehingga menjalankan ulang *preprocessing* tidak menghapusnya.
+
 Jangan mengutip angka dari sumber lain. Folder `preprocess_20261026_d11a2b74c6/` adalah
 *snapshot* sebelumnya dengan aturan promosi versi lama, sedangkan `maganghub_bersih.csv`,
 `ringkasan_per_fase.csv`, dan `log_preprocessing.csv` adalah keluaran `03_preprocess.py` yang
@@ -364,9 +371,9 @@ diparafrasekan.
 
 | Korpus | Mentah | Karantina | Unik | *Model-ready* | Menunggu peninjau | Dikeluarkan |
 |---|---:|---:|---:|---:|---:|---:|
-| X | 5.257 | 0 | 5.257 | **4.286** | 52 | 919 |
-| Threads | 6.028 | 0 | 6.028 | **3.183** | 20 | 2.825 |
-| **Gabungan** | **11.285** | **0** | **11.285** | **7.469** | **72** | **3.744** |
+| X | 5.257 | 0 | 5.257 | **4.263** | 20 | 974 |
+| Threads | 6.028 | 0 | 6.028 | **3.190** | 0 | 2.838 |
+| **Gabungan** | **11.285** | **0** | **11.285** | **7.453** | **20** | **3.812** |
 
 Rekonsiliasi kedua korpus berstatus OK: setiap unggahan unik mendapat tepat satu
 `status_final`, dan `keep + pending + exclude` sama dengan jumlah unggahan unik.
@@ -390,7 +397,7 @@ Korpus utama. Dijalankan di laptop anggota tim yang memegang sesi akun X.
 | Lingkup geografis | Tidak dibatasi eksplisit; dibatasi tidak langsung oleh filter bahasa dan topik program nasional |
 | Atribut konten | Teks unggahan, waktu unggah, bahasa, jenis unggahan (asli, balasan, kutipan), jumlah balasan, *repost*, suka, kutipan |
 | Metadata | ID unggahan, ID percakapan, kata kunci penjaring, rentang tanggal *job*, kolektor, versi adapter, waktu pengambilan, penanda teks terpotong |
-| Volume terkumpul | 5.257 unggahan mentah unik, 4.286 *model-ready* |
+| Volume terkumpul | 5.257 unggahan mentah unik, 4.263 *model-ready* |
 | Kriteria inklusi | Teks memuat bukti nama program, dan waktu unggah berada di dalam periode penelitian |
 | Kriteria eksklusi | Tidak ada bukti nama program di teks, penawaran jasa komersial dengan bukti jelas, pengumuman lowongan mitra, akun otomatis (`meta.ai`), unggahan di luar periode |
 | Ditahan untuk peninjau | Relevansi yang hanya bersandar konteks, dan indikasi promosi yang belum pasti |
@@ -451,11 +458,12 @@ checkpoint per hari, dapat dilanjutkan            |
             keputusan masuk data/annotations/ (append-only),
             lalu jalankan run sekali lagi
                              |
-              +--------------+--------------+
-              v                             v
-   preprocess_tk2.py audit      alat_review/kappa_kalibrasi.py
-   cek rekonsiliasi             kesepakatan dua peninjau
-   dan integritas               (Cohen's kappa)
+       +---------------------+---------------------+
+       v                     v                     v
+preprocess_tk2.py     alat_review/          alat_review/
+audit                 presisi_aturan.py     kappa_kalibrasi.py
+cek rekonsiliasi      presisi aturan        kesepakatan dua
+dan integritas        berbobot strata       peninjau (kappa)
 ```
 
 Teknologi: Python 3.12 sampai 3.13; [twscrape](https://github.com/vladkens/twscrape) 0.20.1
@@ -535,58 +543,60 @@ alasan utama, sehingga angka di bawah tidak tumpang tindih:
 | 3 | *Record* valid | 5.257 | |
 | 4 | Versi ID sama digabung | 0 | `konflik_versi_id.csv` kosong |
 | 5 | Unggahan unik | 5.257 | Basis keputusan |
-| 6 | Dikeluarkan | 919 | Rincian di bawah |
-| 7 | Menunggu peninjau | 52 | Rincian di bawah |
-| 8 | *Model-ready* | 4.286 | |
+| 6 | Dikeluarkan | 974 | Rincian di bawah |
+| 7 | Menunggu peninjau | 20 | Rincian di bawah |
+| 8 | *Model-ready* | 4.263 | |
 
 Alasan pengeluaran:
 
 | Alasan utama | Jumlah |
 |---|---:|
-| Tidak ada bukti nama program di teks | 504 |
-| Penawaran eksplisit jasa atau joki | 132 |
-| Penawaran layanan dengan kontak, harga, atau testimoni | 121 |
-| Paket layanan dengan ajakan kontak | 68 |
-| Layanan dengan kontak dan bukti jual | 33 |
-| Layanan berharga dengan bukti jual | 28 |
-| Pengumuman lowongan mitra | 19 |
+| Tidak ada bukti nama program di teks | 478 |
+| Penawaran eksplisit jasa atau joki | 129 |
+| Penawaran layanan dengan kontak, harga, atau testimoni | 115 |
+| Paket layanan dengan ajakan kontak | 64 |
+| Peninjau menilai iklan | 61 |
+| Peninjau menilai tidak relevan | 39 |
+| Layanan dengan kontak dan bukti jual | 30 |
+| Layanan berharga dengan bukti jual | 27 |
+| Pengumuman lowongan mitra | 17 |
 | Promosi komersial dengan kode referal | 14 |
-| **Total** | **919** |
+| **Total** | **974** |
 
 Alasan penahanan untuk peninjau:
 
 | Alasan utama | Jumlah |
 |---|---:|
-| Relevansi hanya dari konteks kueri `OR` | 21 |
-| Indikasi penawaran belum pasti | 18 |
-| Layanan dengan ajakan kontak | 7 |
-| Kritik atau kutipan layanan | 4 |
-| Banyak tagar dengan sinyal komersial | 1 |
-| Relevansi hanya dari kueri jangkar | 1 |
-| **Total** | **52** |
+| Peninjau ragu atas relevansi | 19 |
+| Peninjau ragu atas indikasi promosi | 1 |
+| **Total** | **20** |
+
+Seluruh 52 unggahan yang sebelumnya ditahan karena aturan otomatis sudah dibaca peninjau.
+Yang tersisa adalah 20 unggahan yang peninjau sendiri tidak bisa putuskan, umumnya karena
+keputusannya bergantung pada teks kutipan atau unggahan induk yang tidak ikut tersimpan.
 
 Komposisi korpus *model-ready* per fase:
 
 | Fase | Media | Tidak terdaftar | Resmi | Total | % korpus | Per hari |
 |---|---:|---:|---:|---:|---:|---:|
-| Fase 1: pengumuman (62 hari) | 14 | 2.280 | 57 | 2.351 | 54,9% | 37,9 |
-| Fase 2: seleksi (20 hari) | 1 | 895 | 1 | 897 | 20,9% | 44,9 |
-| Fase 3: penempatan (35 hari) | 8 | 1.010 | 20 | 1.038 | 24,2% | 29,7 |
-| **Total** | **23** | **4.185** | **78** | **4.286** | | |
+| Fase 1: pengumuman (62 hari) | 14 | 2.274 | 57 | 2.345 | 55,0% | 37,8 |
+| Fase 2: seleksi (20 hari) | 1 | 893 | 1 | 895 | 21,0% | 44,8 |
+| Fase 3: penempatan (35 hari) | 8 | 995 | 20 | 1.023 | 24,0% | 29,2 |
+| **Total** | **23** | **4.162** | **78** | **4.263** | | |
 
 Label `tidak_terdaftar` berarti akun tidak ada di daftar akun resmi dan media di `config.py`.
 Label itu belum berarti akun publik, dan masih perlu diperiksa peninjau.
 
-Sebaran bulanan korpus *model-ready*: Juli 1.416, Agustus 935, September 1.038, Oktober 897.
+Sebaran bulanan korpus *model-ready*: Juli 1.414, Agustus 931, September 1.036, Oktober 882.
 Setiap hari dalam ketiga fase memiliki setidaknya satu unggahan *model-ready*.
 
 Pergeseran distribusi fase akibat penyaringan (`pergeseran_fase_x.csv`):
 
 | Fase | Unggahan unik | *Model-ready* | Proporsi unik | Proporsi *model-ready* | Retensi |
 |---|---:|---:|---:|---:|---:|
-| Fase 1: pengumuman | 2.473 | 2.351 | 47,0% | 54,9% | 95,1% |
-| Fase 2: seleksi | 936 | 897 | 17,8% | 20,9% | 95,8% |
-| Fase 3: penempatan | 1.848 | 1.038 | 35,2% | 24,2% | 56,2% |
+| Fase 1: pengumuman | 2.473 | 2.345 | 47,0% | 55,0% | 94,8% |
+| Fase 2: seleksi | 936 | 895 | 17,8% | 21,0% | 95,6% |
+| Fase 3: penempatan | 1.848 | 1.023 | 35,2% | 24,0% | 55,4% |
 
 Retensi fase 3 jauh lebih rendah karena penawaran jasa komersial menumpuk di periode
 penempatan. Penyaringan menggeser proporsi antarfase, sehingga perbandingan antarfase pada RQ3
@@ -596,17 +606,17 @@ Kontribusi per kolektor:
 
 | Kolektor | Dikeluarkan | *Model-ready* | Menunggu peninjau | Total |
 |---|---:|---:|---:|---:|
-| `twscrape_0.20.1` | 850 | 4.229 | 49 | 5.128 |
-| `connected_brave_dom_v2` | 67 | 47 | 3 | 117 |
+| `twscrape_0.20.1` | 900 | 4.210 | 18 | 5.128 |
+| `connected_brave_dom_v2` | 72 | 43 | 2 | 117 |
 | `connected_brave_dom_v1` | 2 | 10 | 0 | 12 |
 
 Varian korpus yang tersedia untuk analisis:
 
 | Berkas | Isi | Jumlah |
 |---|---|---:|
-| `model_ready_x.csv` dan `.jsonl` | Semua unggahan *model-ready* | 4.286 |
-| `model_ready_x_satu_per_teks_identik.csv` | Satu wakil per grup teks identik | 4.257 |
-| `model_ready_x_tanpa_resmi_media.csv` | Tanpa akun resmi dan media terdaftar | 4.185 |
+| `model_ready_x.csv` dan `.jsonl` | Semua unggahan *model-ready* | 4.263 |
+| `model_ready_x_satu_per_teks_identik.csv` | Satu wakil per grup teks identik | 4.234 |
+| `model_ready_x_tanpa_resmi_media.csv` | Tanpa akun resmi dan media terdaftar | 4.162 |
 | `dataset_x_semua_keputusan.csv` | Seluruh 5.257 unggahan beserta status dan alasannya | 5.257 |
 
 ### C5. Kualitas data dan keterbatasannya
@@ -616,16 +626,18 @@ Varian korpus yang tersedia untuk analisis:
 | Filter bahasa salah di pengambilan awal | `lang:id` mengembalikan nol hasil untuk rentang yang `lang:in` mengembalikan unggahan Indonesia. Uji pembanding tiga tanggal tercatat di `perbandingan_kueri_v3.csv` | Hasil kosong dengan filter lama tidak menandakan tidak ada percakapan | Filter diganti `lang:in`. Hari yang kosong dengan filter lama tidak dihitung selesai dan diambil ulang |
 | Tidak ada bukti kelengkapan | Tidak satu pun dari 117 hari berstatus lengkap. 50 hari pernah kena batas, 3 hari pernah bergalat | Volume per tanggal tidak boleh dibaca sebagai volume percakapan sebenarnya | Status percobaan terakhir per hari dilaporkan apa adanya di `cakupan_harian_x.csv` |
 | Teks berpotensi terpotong | Status pemotongan tidak diketahui untuk 5.128 dari 5.257 unggahan (97,6%). Terbukti terpotong 9, terbukti utuh 120 | Unggahan panjang bisa hilang sebagian isinya | `unknown` dicatat sebagai tidak diketahui, bukan sebagai bukti utuh. Saat *dedup*, versi `text_truncated=False` diprioritaskan |
-| Presisi kueri gabungan | 504 unggahan terjaring tanpa bukti nama program di teksnya, karena kueri `OR` memuat frasa generik | 9,6% data mentah tidak dapat dipastikan membahas program ini | Relevansi dinilai dari bukti di teks, bukan dari kueri. Jalur relevansi disimpan di `relevansi_jalur` |
-| Relevansi yang bersandar konteks | 22 unggahan hanya relevan karena kueri jangkar atau konteks | Tidak dapat dipastikan tanpa pembacaan manusia | Ditahan sebagai `pending`, tidak dimasukkan maupun dibuang sepihak |
-| Promosi komersial | 415 unggahan dikeluarkan karena penawaran jasa atau pengumuman lowongan mitra, 30 ditahan karena ambigu | Jasa joki pendaftaran menggelembungkan frekuensi topik dan bukan opini publik | Aturan `promosi_v3` memisahkan penawaran berbukti dari kritik dan diskusi uang saku. Sinyal dan alasan setiap keputusan tercatat di `exclusion_log_x.csv` |
-| Konten kampanye terkoordinasi | 33 unggahan *model-ready* (0,8%) memakai tagar kampanye `#magangnasional`, `#jagaindonesia`, `#indonesiamaju`, atau `#magangnasional2026`, dari 19 penulis unik | Unggahan promosi program bukan opini publik, dan dapat menggeser distribusi sentimen ke arah positif | Proporsinya kecil di korpus X. Tagar disimpan di teks, sehingga unggahan ini dapat dikeluarkan saat analisis sentimen |
+| Presisi kueri gabungan | 478 unggahan terjaring tanpa bukti nama program di teksnya, karena kueri `OR` memuat frasa generik | 9,1% data mentah tidak dapat dipastikan membahas program ini | Relevansi dinilai dari bukti di teks, bukan dari kueri. Jalur relevansi disimpan di `relevansi_jalur` |
+| Relevansi yang bersandar konteks | 22 unggahan hanya relevan karena kueri jangkar atau konteks. Seluruhnya sudah dibaca peninjau: sebagian dinyatakan relevan dan masuk korpus, sebagian dinyatakan tidak relevan dan dikeluarkan | Keputusannya tidak lagi bersandar pada aturan | Dibaca manusia, bukan diputuskan aturan. Jalur asalnya tetap tersimpan di `relevansi_jalur` |
+| Promosi komersial | 396 unggahan dikeluarkan oleh aturan karena penawaran jasa atau pengumuman lowongan mitra, 61 lagi dikeluarkan atas penilaian peninjau, dan 1 masih ditahan karena peninjau ragu | Jasa joki pendaftaran menggelembungkan frekuensi topik dan bukan opini publik | Aturan `promosi_v3` memisahkan penawaran berbukti dari kritik dan diskusi uang saku. Sinyal dan alasan setiap keputusan tercatat di `exclusion_log_x.csv` |
+| Konten kampanye terkoordinasi | 32 unggahan *model-ready* (0,8%) memakai tagar kampanye `#magangnasional`, `#jagaindonesia`, `#indonesiamaju`, atau `#magangnasional2026`, dari 19 penulis unik | Unggahan promosi program bukan opini publik, dan dapat menggeser distribusi sentimen ke arah positif | Proporsinya kecil di korpus X. Tagar disimpan di teks, sehingga unggahan ini dapat dikeluarkan saat analisis sentimen |
 | Dominasi akun | 2.651 penulis unik untuk 5.257 unggahan. Akun paling aktif menyumbang 125 unggahan; lima akun teratas menyumbang 125, 110, 107, 92, dan 90 unggahan | Opini segelintir akun sangat aktif dapat ikut membentuk gambaran | Dinyatakan sebagai keterbatasan. `user_hash` memungkinkan pembobotan atau analisis per akun |
-| Duplikasi dan salin-tempel | 47 grup teks identik mencakup 287 unggahan; grup terbesar berisi 85 unggahan. 44 grup duplikat-dekat mencakup 344 unggahan | Menggelembungkan frekuensi topik | Hanya ditandai, tidak dihapus. Varian satu wakil per teks identik disediakan (4.257 unggahan) |
+| Duplikasi dan salin-tempel | 47 grup teks identik mencakup 287 unggahan; grup terbesar berisi 85 unggahan. 44 grup duplikat-dekat mencakup 344 unggahan | Menggelembungkan frekuensi topik | Hanya ditandai, tidak dihapus. Varian satu wakil per teks identik disediakan (4.234 unggahan) |
 | Metadata tidak lengkap | `n_quote`, `conversation_id`, dan `content_type` kosong pada 2,45% unggahan; `post_lang` kosong pada 0,23% | Analisis jenis unggahan dan percakapan kehilangan sebagian data | Kekosongan disimpan sebagai `null`, bukan 0, dan dilaporkan di `missingness_x.csv` |
 | Bahasa bukan Indonesia lolos filter | Dari 5.257 unggahan, 5.202 terdeteksi `in`, 25 berbahasa Inggris, 18 berbahasa lain atau tidak terdeteksi, dan 12 tanpa nilai | *Noise* kecil pada analisis berbasis kata | `post_lang` disimpan, sehingga penyaringan ulang dapat dilakukan |
 | Teks sangat pendek | 95 unggahan kurang dari 4 token | Sedikit informasi untuk pemodelan topik | Hanya ditandai di `teks_pendek`, tidak dibuang |
-| Belum ada label manusia | 0 keputusan peninjau tersedia | Presisi dan *recall* aturan serta kesepakatan antarpeninjau belum dapat dihitung. `model_ready_x.csv` adalah hasil aturan otomatis, bukan *gold standard* | `sampel_review_x.csv` berisi 200 unggahan berstrata dengan 40 baris kalibrasi dua peninjau, siap diisi lewat `alat_review/review.html` |
+| Presisi aturan terukur, satu peninjau | 312 baris keputusan masuk, mencakup 252 unggahan unik, 232 di korpus X. Pada sampel berstrata 200 unggahan, status `keep` otomatis disetujui peninjau pada **91,5% ± 5,0** populasi *model-ready* (n=118 baris tegas, 17 baris `ragu`). Aturan relevansi saja 95,0% ± 3,9; aturan promosi saja 89,2% ± 4,9. Status `exclude` disetujui 98,6% ± 1,6, jadi aturan jarang membuang unggahan yang relevan | Presisi korpus sudah terukur, tetapi hanya oleh satu peninjau, sehingga kesepakatan antarpeninjau belum ada. 17 baris `ragu` berarti batas bawah pesimistis presisi `keep` adalah 80,0% | Dihitung dengan `alat_review/presisi_aturan.py` memakai bobot strata dan koreksi populasi terbatas. Baris `ragu` tidak dibuang diam-diam, melainkan dilaporkan sebagai dua batas |
+| Kesepakatan antarpeninjau belum ada | 40 baris kalibrasi `kalibrasi_dua_peninjau=1` sudah diisi satu peninjau; peninjau kedua belum | Cohen's kappa tidak dapat dilaporkan, sehingga tidak diketahui apakah definisi "relevan" dipahami sama oleh dua orang | `alat_review/kappa_kalibrasi.py` siap dijalankan begitu peninjau kedua mengisi 40 baris yang sama secara terpisah |
+| Garam pseudonimisasi tidak diversikan | `.salt` adalah berkas lokal dan sengaja tidak masuk repositori, sehingga `user_hash` berbeda bila *preprocessing* dijalankan di komputer lain | Nilai `user_hash` hanya dapat dibandingkan di dalam satu kali pengolahan. Jumlah penulis unik tidak terpengaruh, karena pemetaannya tetap satu-ke-satu | Dinyatakan sebagai konsekuensi yang diterima. Analisis per akun harus memakai keluaran dari satu kali pengolahan yang sama |
 | Batas fase belum terverifikasi | Batas di `config.JENDELA_WAKTU` mengikuti TK1 §1.6 yang merujuk berita, bukan tanggal resmi yang sudah diverifikasi | Unggahan di dekat batas fase bisa salah kelompok | Dinyatakan sebagai asumsi. `fase_raw` dan `fase_raw_berbeda` disimpan untuk pemeriksaan ulang |
 | Keterwakilan populasi | Pengguna X tidak mewakili seluruh lulusan baru Indonesia. Unggahan yang dihapus atau dari akun terkunci tidak terjaring. Metrik keterlibatan adalah nilai saat pengambilan, bukan nilai akhir | Temuan bersifat indikatif atas wacana daring | Tidak digeneralisasi sebagai opini nasional. Waktu pengambilan metrik disimpan di `metrik_scraped_at` |
 
@@ -661,16 +673,19 @@ Varian korpus yang tersedia untuk analisis:
 
 ### C7. Ringkasan
 
-Korpus X terdiri dari 4.286 unggahan *model-ready* dari 5.257 unggahan mentah unik yang
+Korpus X terdiri dari 4.263 unggahan *model-ready* dari 5.257 unggahan mentah unik yang
 dikumpulkan dengan satu kueri gabungan lima kata kunci berfilter `lang:in`, dijalankan per hari
 kalender atas seluruh 117 hari periode penelitian. Mesin utamanya `twscrape` 0.20.1 yang memakai
 *endpoint* internal X dengan sesi akun, dilengkapi pembacaan DOM Playwright untuk 129 unggahan.
 Penyaringan memakai aturan relevansi berbasis bukti teks dan aturan promosi `promosi_v3`, dan
 setiap keputusan dapat dilacak ke alasannya. Korpus ini menutup kekurangan terbesar korpus
-Threads: fase 1 terisi 2.351 unggahan, atau 37,9 unggahan per hari selama 62 hari, dan setiap
-hari dalam periode penelitian terwakili. Keterbatasan utamanya adalah tidak adanya bukti
-kelengkapan pencarian pada satu hari pun, status pemotongan teks yang tidak diketahui untuk
-97,6% unggahan, dan belum adanya label manusia sehingga presisi aturan belum terukur.
+Threads: fase 1 terisi 2.345 unggahan, atau 37,8 unggahan per hari selama 62 hari, dan setiap
+hari dalam periode penelitian terwakili. Peninjauan manusia atas sampel berstrata 200 unggahan
+menunjukkan presisi status `keep` sebesar 91,5% ± 5,0 pada populasi *model-ready*, dengan batas
+bawah pesimistis 80,0% bila seluruh baris `ragu` dianggap salah. Keterbatasan utamanya adalah
+tidak adanya bukti kelengkapan pencarian pada satu hari pun, status pemotongan teks yang tidak
+diketahui untuk 97,6% unggahan, dan kesepakatan antarpeninjau yang belum dapat dihitung karena
+baru satu peninjau mengisi baris kalibrasi.
 
 ---
 
@@ -701,7 +716,7 @@ dari 1.109 menjadi 20.
 | Lingkup geografis | Tidak dibatasi eksplisit; dibatasi tidak langsung oleh topik program nasional |
 | Atribut konten | Teks unggahan, waktu unggah, jumlah balasan, *repost*, suka |
 | Metadata | ID unggahan, kata kunci penjaring, waktu pengambilan |
-| Volume terkumpul | 6.028 unggahan mentah unik, 3.183 *model-ready* |
+| Volume terkumpul | 6.028 unggahan mentah unik, 3.190 *model-ready* |
 | Kriteria inklusi | Teks menyebut nama program, dan waktu unggah berada di dalam periode penelitian. Lebih ketat daripada X karena jalur konteks tidak dipakai |
 | Kriteria eksklusi | Tidak ada bukti nama program di teks, unggahan di luar periode, akun otomatis, penawaran jasa komersial, pengumuman lowongan mitra, promosi acara pelatihan |
 
@@ -775,9 +790,9 @@ Tahapan *preprocessing* (`threads/tahapan_threads.csv`):
 | 3 | *Record* valid | 6.028 | |
 | 4 | Versi ID sama digabung | 0 | |
 | 5 | Unggahan unik | 6.028 | Basis keputusan |
-| 6 | Dikeluarkan | 2.825 | Rincian di bawah |
-| 7 | Menunggu peninjau | 20 | Rincian di bawah |
-| 8 | *Model-ready* | 3.183 | |
+| 6 | Dikeluarkan | 2.838 | Rincian di bawah |
+| 7 | Menunggu peninjau | 0 | Seluruhnya sudah diputuskan peninjau |
+| 8 | *Model-ready* | 3.190 | |
 
 Alasan pengeluaran:
 
@@ -793,44 +808,38 @@ Alasan pengeluaran:
 | Penawaran layanan dengan kontak, harga, atau testimoni | 3 |
 | Paket layanan dengan ajakan kontak | 2 |
 | Promosi komersial dengan kode referal | 2 |
-| **Total** | **2.825** |
+| Peninjau menilai iklan | 13 |
+| **Total** | **2.838** |
 
-Alasan penahanan untuk peninjau:
-
-| Alasan utama | Jumlah |
-|---|---:|
-| Layanan dengan ajakan kontak | 6 |
-| Indikasi penawaran belum pasti | 5 |
-| Kritik atau kutipan layanan | 4 |
-| Banyak tagar dengan sinyal komersial | 3 |
-| Bantuan gratis yang perlu konteks | 2 |
-| **Total** | **20** |
+Tidak ada unggahan yang masih menunggu peninjau. Seluruh 20 unggahan yang sebelumnya ditahan
+aturan promosi sudah dibaca: 7 dinyatakan bukan iklan dan masuk korpus, 13 dinyatakan iklan dan
+dikeluarkan.
 
 Komposisi korpus *model-ready* per fase:
 
 | Fase | Media | Tidak terdaftar | Resmi | Total | % korpus | Per hari |
 |---|---:|---:|---:|---:|---:|---:|
-| Fase 1: pengumuman (62 hari) | 10 | 694 | 24 | 728 | 22,9% | 11,7 |
+| Fase 1: pengumuman (62 hari) | 10 | 695 | 24 | 729 | 22,9% | 11,8 |
 | Fase 2: seleksi (20 hari) | 26 | 600 | 17 | 643 | 20,2% | 32,2 |
-| Fase 3: penempatan (35 hari) | 79 | 1.691 | 42 | 1.812 | 56,9% | 51,8 |
-| **Total** | **115** | **2.985** | **83** | **3.183** | | |
+| Fase 3: penempatan (35 hari) | 79 | 1.697 | 42 | 1.818 | 57,0% | 51,9 |
+| **Total** | **115** | **2.992** | **83** | **3.190** | | |
 
-Sebaran bulanan korpus *model-ready*: Juli 366, Agustus 362, September 1.104, Oktober 1.351.
+Sebaran bulanan korpus *model-ready*: Juli 366, Agustus 363, September 1.107, Oktober 1.354.
 Angka ini membatalkan temuan putaran pertama bahwa kedalaman pencarian Threads tidak menjangkau
-sebelum September. Kepadatannya tetap paling rendah di fase 1, 11,7 unggahan per hari berbanding
-51,8 di fase 3, dan sebarannya belum merata: hanya 47 dari 62 hari fase 1 memiliki setidaknya
+sebelum September. Kepadatannya tetap paling rendah di fase 1, 11,8 unggahan per hari berbanding
+51,9 di fase 3, dan sebarannya belum merata: hanya 47 dari 62 hari fase 1 memiliki setidaknya
 satu unggahan *model-ready*, sedangkan fase 2 dan fase 3 terisi penuh.
 
 Pergeseran distribusi fase akibat penyaringan (`threads/pergeseran_fase_threads.csv`):
 
 | Fase | Unggahan unik | *Model-ready* | Proporsi unik | Proporsi *model-ready* | Retensi |
 |---|---:|---:|---:|---:|---:|
-| Fase 1: pengumuman | 1.173 | 728 | 19,9% | 22,9% | 62,1% |
+| Fase 1: pengumuman | 1.173 | 729 | 19,9% | 22,9% | 62,1% |
 | Fase 2: seleksi | 1.056 | 643 | 17,9% | 20,2% | 60,9% |
-| Fase 3: penempatan | 3.660 | 1.812 | 62,2% | 56,9% | 49,5% |
+| Fase 3: penempatan | 3.660 | 1.818 | 62,2% | 57,0% | 49,7% |
 
-Varian korpus: `model_ready_threads.csv` 3.183 unggahan, `..._satu_per_teks_identik.csv` 3.083,
-`..._tanpa_resmi_media.csv` 2.985, dan `dataset_threads_semua_keputusan.csv` seluruh 6.028
+Varian korpus: `model_ready_threads.csv` 3.190 unggahan, `..._satu_per_teks_identik.csv` 3.090,
+`..._tanpa_resmi_media.csv` 2.992, dan `dataset_threads_semua_keputusan.csv` seluruh 6.028
 unggahan beserta status dan alasannya.
 
 Akun resmi yang teridentifikasi: `kemnaker`, `maganghub.kemnaker`. Akun media dan informasi
@@ -846,14 +855,15 @@ karier: `viralyn.daily`, `mcinews.id`, `titik_temu.news`, `satu_meja.id`, `teman
 | Perlakuan berbeda antarplatform | Korpus X memakai jalur konteks, korpus Threads tidak | Kriteria inklusi kedua korpus tidak identik, sehingga penggabungan perlu dinyatakan sebagai korpus dengan dua aturan | Kolom `relevansi_jalur` memungkinkan penyeragaman dengan membuang jalur konteks di korpus X juga |
 | Tidak ada filter tanggal | 139 unggahan terjaring di luar periode penelitian, paling tua 16 Desember 2025 | Pencarian tidak dapat diarahkan ke fase tertentu | Penyaringan tanggal dilakukan saat *preprocessing* dengan interval `[awal 00.00 WIB, akhir 00.00 WIB)` |
 | Metadata minim | `post_lang`, `content_type`, `n_quote`, dan `text_truncated` kosong untuk seluruh 6.028 unggahan | Penyaringan bahasa, analisis jenis unggahan, dan verifikasi keutuhan teks tidak mungkin dilakukan di korpus ini | Dilaporkan di `threads/missingness_threads.csv`. Analisis yang memerlukan atribut ini dibatasi pada korpus X |
-| Kepadatan fase 1 rendah | 11,7 unggahan per hari di fase 1 berbanding 51,8 di fase 3, dan hanya 47 dari 62 hari fase 1 terisi | Tidak dapat dipisahkan apakah ini peningkatan diskusi yang nyata atau efek urutan hasil pencarian yang mengutamakan unggahan terbaru | Dinyatakan sebagai keterbatasan. Perbandingan RQ3 memakai proporsi dan menyertakan korpus X yang kepadatannya merata |
+| Kepadatan fase 1 rendah | 11,8 unggahan per hari di fase 1 berbanding 51,9 di fase 3, dan hanya 47 dari 62 hari fase 1 terisi | Tidak dapat dipisahkan apakah ini peningkatan diskusi yang nyata atau efek urutan hasil pencarian yang mengutamakan unggahan terbaru | Dinyatakan sebagai keterbatasan. Perbandingan RQ3 memakai proporsi dan menyertakan korpus X yang kepadatannya merata |
 | Dominasi akun | 3.881 penulis unik untuk 6.028 unggahan. Akun paling aktif menyumbang 79 unggahan | Opini akun sangat aktif dapat ikut membentuk gambaran | Dinyatakan sebagai keterbatasan. `user_hash` memungkinkan analisis per akun |
-| Konten kampanye terkoordinasi | 218 unggahan *model-ready* (6,8%) memakai tagar kampanye, terbanyak `#magangnasional` 141, `#indonesiakita` 59, dan `#jagaindonesia` 51. Berasal dari 143 penulis unik, dengan 38 unggahan berteks identik dalam 9 grup | Teks promosi yang sama diunggah banyak akun berbeda. Ini bukan opini publik dan menggeser distribusi sentimen ke arah positif, tepat pada variabel yang diukur penelitian ini | Belum disaring. Proporsinya delapan kali lebih besar daripada korpus X, sehingga analisis sentimen Threads sebaiknya dilaporkan dengan dan tanpa 218 unggahan ini |
-| Duplikasi | 88 grup teks identik mencakup 252 unggahan; 42 grup duplikat-dekat mencakup 138 unggahan | Menggelembungkan frekuensi topik | Hanya ditandai. Varian satu wakil per teks identik disediakan (3.083 unggahan) |
+| Konten kampanye terkoordinasi | 218 unggahan *model-ready* (6,8%) memakai tagar kampanye, terbanyak `#magangnasional` 153, `#indonesiakita` 59, dan `#jagaindonesia` 51. Berasal dari 143 penulis unik, dengan 38 unggahan berteks identik dalam 9 grup | Teks promosi yang sama diunggah banyak akun berbeda. Ini bukan opini publik dan menggeser distribusi sentimen ke arah positif, tepat pada variabel yang diukur penelitian ini | Belum disaring. Proporsinya delapan kali lebih besar daripada korpus X, sehingga analisis sentimen Threads sebaiknya dilaporkan dengan dan tanpa 218 unggahan ini |
+| Duplikasi | 88 grup teks identik mencakup 252 unggahan; 42 grup duplikat-dekat mencakup 138 unggahan | Menggelembungkan frekuensi topik | Hanya ditandai. Varian satu wakil per teks identik disediakan (3.090 unggahan) |
 | Pembatasan platform | Status 429 diterima pada dua putaran | Pengumpulan terhenti sebagian | Skrip berhenti otomatis, jeda *scroll* diperlambat, pengambilan diulang setelah beberapa jam |
 | Data pribadi dalam teks | 85 unggahan bertanda indikasi data pribadi di teks aslinya | Risiko privasi | Disamarkan dengan penanda di seluruh versi teks |
 | Teks sangat pendek | 97 unggahan kurang dari 4 token | Sedikit informasi untuk pemodelan topik | Hanya ditandai |
 | Metrik keterlibatan | Bergantung pada *field* yang tersedia di respons JSON | Nilai bisa kosong | Dipakai sebagai pelengkap, bukan variabel utama |
+| Presisi aturan belum diukur untuk Threads | 20 keputusan peninjau masuk, seluruhnya dari antrean `pending`. Sampel berstrata 200 unggahan `threads/sampel_review_threads.csv` belum diisi | Angka presisi 91,5% hanya berlaku untuk korpus X dan tidak boleh dipakai untuk Threads. Korpus Threads memakai aturan inklusi yang berbeda, sehingga presisinya bisa berbeda jauh | Berkas sampelnya sudah siap dengan 40 baris kalibrasi. Bila tidak terisi sebelum tenggat, laporan harus menyatakan presisi Threads belum terukur |
 | Keterwakilan populasi | Pengguna Threads tidak mewakili seluruh lulusan baru Indonesia. Unggahan terhapus atau dari akun privat tidak terjaring | Temuan bersifat indikatif atas wacana daring | Tidak digeneralisasi sebagai opini nasional |
 
 ### C6. Pertimbangan etika
@@ -868,7 +878,7 @@ Berlaku sama dengan C6 korpus X, dengan dua tambahan khusus Threads:
 
 ### C7. Ringkasan
 
-Korpus Threads terdiri dari 3.183 unggahan *model-ready* dari 6.028 unggahan mentah unik yang
+Korpus Threads terdiri dari 3.190 unggahan *model-ready* dari 6.028 unggahan mentah unik yang
 dikumpulkan dari lima kata kunci dalam 11 putaran *scraping* berbasis JSON dengan Playwright.
 Karena pencarian Threads tidak mendukung frasa persis maupun filter bahasa, 43,4% data mentah
 terjaring tanpa menyebut nama program, sehingga tim memutuskan membatasi korpus Threads pada
@@ -876,7 +886,8 @@ unggahan yang menyebut nama program dan mengeluarkan 1.089 unggahan jalur kontek
 menyediakan teks untuk RQ1 dan RQ2 serta penanda waktu dan fase untuk RQ3, dan menjangkau
 ketiga fase. Keterbatasan utamanya adalah metadata yang jauh lebih miskin daripada X, karena
 bahasa, jenis unggahan, dan status pemotongan teks seluruhnya kosong; kriteria inklusi yang
-lebih ketat daripada korpus X; serta kepadatan fase 1 yang baru mengisi 47 dari 62 hari.
+lebih ketat daripada korpus X; kepadatan fase 1 yang baru mengisi 47 dari 62 hari; serta presisi
+aturan yang belum terukur karena sampel berstrata Threads belum ditinjau.
 
 ---
 
@@ -885,47 +896,74 @@ lebih ketat daripada korpus X; serta kepadatan fase 1 yang baru mengisi 47 dari 
 | Aspek | X | Threads | Gabungan |
 |---|---:|---:|---:|
 | Unggahan mentah unik | 5.257 | 6.028 | 11.285 |
-| *Model-ready* | 4.286 | 3.183 | 7.469 |
-| Menunggu peninjau | 52 | 20 | 72 |
-| Dikeluarkan | 919 | 2.825 | 3.744 |
-| Penulis unik | 2.651 | 3.881 | 6.532 |
-| Tanpa akun resmi dan media terdaftar | 4.185 | 2.985 | 7.170 |
-| Satu wakil per teks identik | 4.257 | 3.083 | 7.340 |
+| *Model-ready* | 4.263 | 3.190 | 7.453 |
+| Menunggu peninjau | 20 | 0 | 20 |
+| Dikeluarkan | 974 | 2.838 | 3.812 |
+| Unggahan yang sudah diputuskan peninjau | 232 | 20 | 252 |
+| Penulis unik atas seluruh unggahan unik | 2.651 | 3.881 | 6.532 |
+| Tanpa akun resmi dan media terdaftar | 4.162 | 2.992 | 7.154 |
+| Satu wakil per teks identik | 4.234 | 3.090 | 7.324 |
 
 Komposisi *model-ready* gabungan per fase:
 
 | Fase | X | Threads | Gabungan | % korpus gabungan |
 |---|---:|---:|---:|---:|
-| Fase 1: pengumuman (62 hari) | 2.351 | 728 | 3.079 | 41,2% |
-| Fase 2: seleksi (20 hari) | 897 | 643 | 1.540 | 20,6% |
-| Fase 3: penempatan (35 hari) | 1.038 | 1.812 | 2.850 | 38,2% |
-| **Total** | **4.286** | **3.183** | **7.469** | |
+| Fase 1: pengumuman (62 hari) | 2.345 | 729 | 3.074 | 41,2% |
+| Fase 2: seleksi (20 hari) | 895 | 643 | 1.538 | 20,6% |
+| Fase 3: penempatan (35 hari) | 1.023 | 1.818 | 2.841 | 38,1% |
+| **Total** | **4.263** | **3.190** | **7.453** | |
 
 Angka penulis unik gabungan adalah penjumlahan sederhana. `user_hash` dihitung per platform,
 sehingga satu orang yang aktif di X dan Threads terhitung dua kali dan tidak dapat dipadankan.
 
 Dua catatan penting sebelum angka gabungan dipakai di laporan. Pertama, kriteria inklusi kedua
 korpus tidak identik: korpus X memakai jalur relevansi konteks, korpus Threads tidak. Kedua,
-fase 1 kini menjadi fase dengan unggahan terbanyak (3.079 unggahan, 41,2% korpus), berbeda jauh
-dari pengumpulan putaran pertama yang hampir tidak menjangkau fase itu.
+fase 1 kini menjadi fase dengan unggahan terbanyak (3.074 unggahan, 41,2% korpus), berbeda jauh
+dari pengumpulan putaran pertama yang hampir tidak menjangkau fase itu. Ketiga, presisi aturan
+baru terukur untuk korpus X; angka 91,5% tidak boleh dipakai untuk korpus Threads.
 
 ### Yang belum selesai sebelum laporan dikumpulkan
 
 | Pekerjaan | Keadaan | Akibat bila dibiarkan |
 |---|---|---|
-| Peninjauan manusia | 0 keputusan masuk; `data/annotations/` belum ada | Presisi dan *recall* aturan relevansi serta kesepakatan antarpeninjau tidak dapat dilaporkan. Angka validasi 76,7% dari putaran pertama berasal dari korpus lama dan tidak berlaku untuk *snapshot* ini |
-| Antrean `pending` | 72 unggahan belum diputuskan, 52 di X dan 20 di Threads | 0,6% unggahan unik gabungan tidak masuk korpus maupun dibuang |
+| Peninjau kedua untuk kalibrasi | 40 baris `kalibrasi_dua_peninjau=1` di `sampel_review_x.csv` sudah diisi `peninjau_1`; peninjau kedua belum | Cohen's kappa tidak dapat dilaporkan. Angka validasi 76,7% dari putaran pertama berasal dari korpus lama dan tidak berlaku untuk *snapshot* ini |
+| Sampel berstrata Threads | `threads/sampel_review_threads.csv` 200 baris, belum diisi; 20 unggahan Threads yang sudah ditinjau semuanya berasal dari antrean `pending`, bukan dari sampel acak | Presisi aturan untuk korpus Threads tidak dapat dilaporkan. Angka 91,5% hanya berlaku untuk korpus X |
+| Antrean `pending` | 20 unggahan di korpus X, seluruhnya ditahan karena peninjau sendiri ragu | 0,2% unggahan unik gabungan tidak masuk korpus maupun dibuang. Keputusannya bergantung pada teks kutipan atau unggahan induk yang tidak tersimpan |
 | Dasar pembatasan Threads | Pemeriksaan sampel yang mendasari pengecualian 1.089 unggahan tercatat sebagai komentar di `config.py`, bukan sebagai keputusan peninjau di `data/annotations/` | Pengecualian terbesar di korpus Threads tidak punya jejak yang dapat diverifikasi. Jumlah sampel dan nama peninjau perlu dinyatakan di laporan |
-| Pemeriksaan label akun | 7.170 unggahan *model-ready* berlabel `tidak_terdaftar` | Pemisahan opini publik dari narasi resmi belum terjamin |
-| Audit *snapshot* | `data/interim/` tercantum di `.gitignore`, sehingga folder *snapshot* tidak ada di salinan repositori | `preprocess_tk2.py audit` tidak dapat dijalankan ulang dari repositori. *Snapshot* masih ada di laptop penjalan *preprocessing*, dan `sha256` di `snapshot_manifest.json` tetap dapat memverifikasi data mentah |
+| Pemeriksaan label akun | 7.154 unggahan *model-ready* berlabel `tidak_terdaftar` | Pemisahan opini publik dari narasi resmi belum terjamin |
+| Audit *snapshot* | `data/interim/` tercantum di `.gitignore`, sehingga folder *snapshot* tidak ada di salinan repositori | Terpecahkan. Folder *snapshot* dapat dibangun ulang dari `data/raw/` memakai `byte_limit` dan `sha256` di `snapshot_manifest.json`; setelah itu `preprocess_tk2.py audit` berjalan dan berstatus OK. Langkahnya ada di "Catatan reproduksi" |
 
 Alur peninjauan: buka `alat_review/review.html` di browser, isi nama peninjau, pilih
 `sampel_review_<platform>.csv` atau `antrean_review_<platform>.csv`, labeli dengan pintasan
 tombol, lalu ekspor CSV. Jalankan `python preprocess_tk2.py import-review <berkas>` diikuti
-`python preprocess_tk2.py run` agar keputusan diterapkan. Untuk kesepakatan antarpeninjau,
-dua orang mengisi 40 baris `kalibrasi_dua_peninjau=1` secara terpisah, lalu jalankan
-`python alat_review/kappa_kalibrasi.py`. Keputusan manusia mengalahkan aturan, dan peninjau
-bernama `auto`, `agent`, atau `model` ditolak oleh skrip.
+`python preprocess_tk2.py run` agar keputusan diterapkan. Presisi aturan dihitung dari berkas
+sampel yang sudah diisi dengan `python alat_review/presisi_aturan.py <berkas>`. Untuk
+kesepakatan antarpeninjau, dua orang mengisi 40 baris `kalibrasi_dua_peninjau=1` secara
+terpisah, lalu jalankan `python alat_review/kappa_kalibrasi.py`. Keputusan manusia mengalahkan
+aturan, dan peninjau bernama `auto`, `agent`, atau `model` ditolak oleh skrip.
+
+Putaran peninjauan pertama memakai nama peninjau `peninjau_1`, bukan nama orang, karena
+berkas ekspornya ikut masuk repositori publik. Berkas hasilnya:
+
+| Berkas | Isi | Baris terisi |
+|---|---|---:|
+| `review_peninjau1_kalibrasi.csv` | 40 baris kalibrasi korpus X | 40 |
+| `review_peninjau1_sampel.csv` | Sampel berstrata 200 unggahan korpus X | 200 |
+| `antrean_review_x__peninjau1.csv` | Seluruh antrean `pending` korpus X | 52 |
+| `threads/antrean_review_threads__peninjau1.csv` | Seluruh antrean `pending` korpus Threads | 20 |
+
+Sampel berstrata dibekukan sekali per folder keluaran. `preprocess_tk2.py run` tidak mengundi
+ulang `sampel_review_*.csv` bila berkasnya sudah ada, karena strata dan bobotnya memakai
+`status_final`, yang bergeser setiap kali keputusan peninjau masuk. Tanpa pembekuan ini, undian
+ulang akan membuat label yang sudah diisi kehilangan populasi acuannya, sehingga presisi dan
+kappa tidak lagi dapat dihitung. Untuk mengundi ulang dengan sengaja, hapus berkas sampelnya.
+
+Dua catatan jujur tentang putaran ini. Pertama, 20 dari 52 baris antrean X juga ada di sampel
+berstrata, dan di 9 di antaranya peninjau memberi nilai berbeda pada dua kesempatan: di berkas
+antrean, yang menampilkan tebakan mesin, ia lebih sering memilih `ragu`. Impor memakai urutan
+waktu pengisian, sehingga penilaian terakhir yang berlaku. Kedua, berkas kalibrasi dan sampel
+memuat 40 baris yang sama dan penilaiannya identik, jadi tidak ada konflik di dalam satu
+peninjau.
 
 ### Keputusan: data Threads putaran pertama tidak digabungkan
 
@@ -961,11 +999,48 @@ keputusan ini dapat diperiksa ulang, dan pemeriksaan di atas dapat diulang denga
 
 ### Catatan reproduksi
 
-*Snapshot* `20261026_3067bfd95e` dijalankan di macOS dengan Python 3.12.11, pandas 3.1.0, NumPy
-2.5.4, dan scikit-learn 1.9.1. *Snapshot* sebelumnya dijalankan di Windows dengan pandas 3.0.0.
-Perbedaan versi paket tidak mengubah aturan, tetapi perlu dicatat karena deteksi duplikat-dekat
-memakai TF-IDF dari scikit-learn. Versi persis setiap *snapshot* tercatat di
-`snapshot_manifest.json` masing-masing.
+*Snapshot* `20261026_3067bfd95e` pertama kali dijalankan di macOS dengan Python 3.12.11,
+pandas 3.1.0, NumPy 2.5.4, dan scikit-learn 1.9.1. *Snapshot* sebelumnya dijalankan di Windows
+dengan pandas 3.0.0. Perbedaan versi paket tidak mengubah aturan, tetapi perlu dicatat karena
+deteksi duplikat-dekat memakai TF-IDF dari scikit-learn. Versi persis setiap *snapshot* tercatat
+di `snapshot_manifest.json` masing-masing.
+
+*Snapshot* yang sama dijalankan ulang di Windows 11 dengan Python 3.13 sebelum keputusan peninjau
+dimasukkan, dan hasilnya identik angka per angka: X 4.286 *model-ready*, 52 `pending`, 919
+dikeluarkan; Threads 3.183, 20, dan 2.825. Satu-satunya kolom yang berbeda adalah `user_hash`,
+karena garam pseudonimisasi bersifat lokal per komputer. Jadi perbedaan angka sesudahnya berasal
+dari keputusan peninjau, bukan dari lingkungan.
+
+Folder *snapshot* sendiri tidak ikut masuk repositori, tetapi dapat dibangun ulang dari
+`data/raw/` karena berkas mentahnya bersifat *append-only* dan manifestnya menyimpan `byte_limit`
+serta `sha256` setiap berkas:
+
+```python
+import json
+from pathlib import Path
+from tk2prep import snapshot as sn
+
+m = json.loads(Path("data/processed/preprocess_20261026_3067bfd95e/snapshot_manifest.json")
+               .read_text(encoding="utf-8"))
+folder = Path("data/interim/snapshots") / m["snapshot_id"]
+sn.rekonstruksi_dari_raw(m, Path("data/raw"), folder)          # gagal bila raw sudah berubah
+meta = folder / "raw" / "_meta"
+meta.mkdir(parents=True, exist_ok=True)
+for f in m["supporting_files"]:                                 # metadata cakupan kolektor
+    (meta / f["file"]).write_bytes((Path("data/raw") / f["file"]).read_bytes())
+(folder / "snapshot_manifest.json").write_text(json.dumps(m, ensure_ascii=False, indent=2),
+                                               encoding="utf-8", newline="
+")
+sn.verifikasi_snapshot(folder)                                  # melempar galat bila tidak cocok
+```
+
+Sesudah itu `python preprocess_tk2.py run` dan `python preprocess_tk2.py audit` berjalan dari
+salinan repositori, dan audit berstatus OK.
+
+Agar `sha256` tetap cocok di Windows, macOS, dan Linux, `.gitattributes` memuat `data/** -text`
+sehingga Git tidak mengubah akhir baris berkas data. Laporan dan konfigurasi yang dihasilkan
+`preprocess_tk2.py run` juga ditulis dengan akhir baris LF di semua sistem operasi, supaya
+keluaran dari dua komputer berbeda dapat dibandingkan langsung.
 
 ### Panduan panjang tulisan laporan bagian C
 

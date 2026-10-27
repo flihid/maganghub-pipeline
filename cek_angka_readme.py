@@ -18,10 +18,10 @@ RAW = ROOT / "data/raw"
 
 # Angka yang ditulis di README bagian "Temuan pengumpulan data".
 DIHARAPKAN = {
-    "x": {"unik": 5257, "keep": 4286, "pending": 52, "exclude": 919},
-    "threads": {"unik": 6028, "keep": 3183, "pending": 20, "exclude": 2825},
+    "x": {"unik": 5257, "keep": 4263, "pending": 20, "exclude": 974},
+    "threads": {"unik": 6028, "keep": 3190, "pending": 0, "exclude": 2838},
 }
-GABUNGAN = {"unik": 11285, "keep": 7469, "pending": 72, "exclude": 3744}
+GABUNGAN = {"unik": 11285, "keep": 7453, "pending": 20, "exclude": 3812}
 
 
 def baca_tahapan(file):
